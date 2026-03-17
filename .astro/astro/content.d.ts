@@ -619,6 +619,13 @@ declare module 'astro:content' {
   collection: "events";
   data: InferEntrySchema<"events">
 } & { render(): Render[".md"] };
+"2026-04-15-conference-ot-security-summit.md": {
+	id: "2026-04-15-conference-ot-security-summit.md";
+  slug: "2026-04-15-conference-ot-security-summit";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
 "2026-05-06-conference-v2-security-2026.md": {
 	id: "2026-05-06-conference-v2-security-2026.md";
   slug: "2026-05-06-conference-v2-security-2026";
@@ -626,9 +633,37 @@ declare module 'astro:content' {
   collection: "events";
   data: InferEntrySchema<"events">
 } & { render(): Render[".md"] };
+"2026-05-20-meetup-citysec-q2.md": {
+	id: "2026-05-20-meetup-citysec-q2.md";
+  slug: "2026-05-20-meetup-citysec-q2";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
+"2026-06-20-conference-bsides-aarhus.md": {
+	id: "2026-06-20-conference-bsides-aarhus.md";
+  slug: "2026-06-20-conference-bsides-aarhus";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
 "2026-09-01-conference-industrial-security-conference-copenhagen.md": {
 	id: "2026-09-01-conference-industrial-security-conference-copenhagen.md";
   slug: "2026-09-01-conference-industrial-security-conference-copenhagen";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
+"2026-10-07-meetup-citysec-q3.md": {
+	id: "2026-10-07-meetup-citysec-q3.md";
+  slug: "2026-10-07-meetup-citysec-q3";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
+"2026-11-18-meetup-citysec-q4.md": {
+	id: "2026-11-18-meetup-citysec-q4.md";
+  slug: "2026-11-18-meetup-citysec-q4";
   body: string;
   collection: "events";
   data: InferEntrySchema<"events">
