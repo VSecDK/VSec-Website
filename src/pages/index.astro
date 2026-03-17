@@ -194,7 +194,7 @@ const stats = [
       <div id="members-dots" class="flex justify-center gap-2 mt-8" role="group" aria-label="Pages"></div>
 
       <script is:inline define:vars={{ membersJson }}>
-        const PER_PAGE = 2;
+        const PER_PAGE = 4;
         const MAX_PAGES = 10;
         const INTERVAL = 20000;
         const members = membersJson.slice().sort(() => Math.random() - 0.5);
@@ -220,9 +220,12 @@ const stats = [
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
             : '';
 
-          const roles = m.roles.slice(0, 3).map(r =>
-            `<span class="mc-role">${r}</span>`
-          ).join('');
+          const skipRoles = new Set(['verified', 'moderator', 'administrator']);
+          const roles = m.roles
+            .filter(r => !skipRoles.has(r.toLowerCase()))
+            .slice(0, 3)
+            .map(r => `<span class="mc-role">${r}</span>`)
+            .join('');
 
           const bio = m.bio
             ? `<p class="mc-bio">${m.bio}</p>`
@@ -237,7 +240,7 @@ const stats = [
                   ${badge}
                   <span class="mc-handle">@${m.handle}</span>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${roles}</div>
+                ${roles ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${roles}</div>` : ''}
                 ${bio}
               </div>
             </div>`;
