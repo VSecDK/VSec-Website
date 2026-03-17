@@ -111,6 +111,8 @@
 }
 .mc-bio    { font-size: 13px; color: rgb(var(--text-secondary)); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .mc-badge  { color: rgb(var(--accent)); }
+.mc-social { color: rgb(var(--text-muted)); transition: color 0.2s; display: inline-flex; align-items: center; }
+.mc-social:hover { color: rgb(var(--accent)); }
 .mc-dot    { width: 6px; height: 6px; border-radius: 50%; border: none; cursor: pointer; transition: background 0.3s, transform 0.3s; background: rgba(var(--text-muted) / 0.4); }
 .mc-dot[aria-pressed="true"] { background: rgb(var(--accent)); transform: scale(1.4); }
 
