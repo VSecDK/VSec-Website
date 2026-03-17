@@ -13,7 +13,7 @@ const grouped = all.reduce<Record<string, typeof all>>((acc, c) => {
   return acc;
 }, {});
 
-const order = ['Denmark', 'Nordic', 'International', 'Hacker & Maker Spaces', 'Other'];
+const order = ['Denmark', 'Danish CTF Teams', 'Nordic', 'International', 'Hacker & Maker Spaces', 'Other'];
 const sortedGroups = order
   .filter(k => grouped[k])
   .map(k => ({ label: k, items: grouped[k] }));
