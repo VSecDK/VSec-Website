@@ -1,0 +1,147 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+const links = [
+  { href: '/posts', label: 'Posts' },
+  { href: '/learning', label: 'Learning' },
+  { href: '/incidents', label: 'Incidents' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/events', label: 'Events' },
+  { href: '/members', label: 'Members' },
+  { href: '/communities', label: 'Communities' },
+  { href: '/contribute', label: 'Contribute' },
+  { href: '/about', label: 'About' },
+];
+
+const current = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50 border-b border-border bg-bg-base/80 backdrop-blur-md">
+  <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between" aria-label="Main navigation">
+
+    <a href="/" class="font-mono font-semibold text-text-primary tracking-tight flex items-center gap-1.5 group">
+      <span class="text-accent group-hover:text-accent/80 transition-colors duration-200">[</span>
+      <span class="group-hover:text-accent transition-colors duration-200">VSec</span>
+      <span class="text-accent group-hover:text-accent/80 transition-colors duration-200">]</span>
+    </a>
+
+    <!-- Desktop menu -->
+    <ul class="hidden md:flex items-center gap-1">
+      {links.map(link => (
+        <li>
+          <a
+            href={link.href}
+            class:list={[
+              'font-mono text-sm px-3 py-1.5 rounded transition-all duration-200',
+              current.startsWith(link.href)
+                ? 'text-accent bg-accent/8'
+                : 'text-text-secondary hover:text-text-primary hover:bg-white/4',
+            ]}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <ThemeToggle />
+      <a
+        href="https://discord.gg/vsec"
+        target="_blank"
+        rel="noopener"
+        class="btn-primary text-xs py-2 px-4"
+      >
+        Discord
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+      </a>
+
+      <!-- Hamburger (mobile) -->
+      <button
+        id="nav-toggle"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="nav-mobile"
+        class="md:hidden flex flex-col justify-center items-center w-9 h-9 rounded border border-border bg-bg-surface hover:border-accent/30 transition-colors duration-200"
+      >
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 origin-center"></span>
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 mt-1.5"></span>
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 mt-1.5"></span>
+      </button>
+    </div>
+
+  </nav>
+
+  <!-- Mobile dropdown -->
+  <div
+    id="nav-mobile"
+    class="md:hidden hidden border-t border-border bg-bg-base"
+    role="navigation"
+    aria-label="Mobile navigation"
+  >
+    <ul class="max-w-6xl mx-auto px-6 py-3 flex flex-col gap-1">
+      {links.map(link => (
+        <li>
+          <a
+            href={link.href}
+            class:list={[
+              'font-mono text-sm px-3 py-2.5 rounded flex items-center transition-all duration-200',
+              current.startsWith(link.href)
+                ? 'text-accent bg-accent/8'
+                : 'text-text-secondary hover:text-text-primary hover:bg-white/4',
+            ]}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</header>
+
+<script is:inline>
+  const toggle = document.getElementById('nav-toggle');
+  const mobile = document.getElementById('nav-mobile');
+  if (!toggle || !mobile) throw new Error('Nav elements not found');
+  const bars = toggle.querySelectorAll('.hamburger-bar');
+
+  function closeMenu() {
+    mobile.classList.add('hidden');
+    bars.forEach(b => b.style.cssText = '');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open menu');
+  }
+
+  toggle.addEventListener('click', () => {
+    const open = mobile.classList.toggle('hidden') === false;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+
+    if (open) {
+      bars[0].style.cssText = 'transform:translateY(8px) rotate(45deg)';
+      bars[1].style.cssText = 'opacity:0';
+      bars[2].style.cssText = 'transform:translateY(-8px) rotate(-45deg)';
+      // Move focus to first menu item
+      const firstLink = mobile.querySelector('a');
+      if (firstLink) firstLink.focus();
+    } else {
+      bars[0].style.cssText = '';
+      bars[1].style.cssText = '';
+      bars[2].style.cssText = '';
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      closeMenu();
+      toggle.focus();
+    }
+  });
+
+  // Close on navigation
+  mobile.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', closeMenu)
+  );
+</script>

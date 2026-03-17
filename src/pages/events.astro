@@ -1,0 +1,125 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import SearchFilter from '../components/SearchFilter.astro';
+
+// Compare date strings (YYYY-MM-DD) to avoid UTC/local timezone errors
+const todayStr = new Date().toLocaleDateString('sv-SE');
+
+const allEvents = (await getCollection('events'))
+  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+
+const upcoming = allEvents.filter(e => e.data.date.toISOString().slice(0, 10) >= todayStr);
+const past     = allEvents
+  .filter(e => e.data.date.toISOString().slice(0, 10) < todayStr)
+  .reverse();
+
+const typeLabel: Record<string, string> = {
+  meetup: 'Meetup',
+  ctf: 'CTF',
+  workshop: 'Workshop',
+  conference: 'Conference',
+};
+
+---
+
+<Layout title="Events" description="Upcoming and past VSec events">
+
+  <div class="max-w-6xl mx-auto px-6 py-16">
+    <div class="flex items-start justify-between gap-8 mb-12">
+      <div>
+        <p class="section-label">// Calendar</p>
+        <h1 class="font-mono font-bold text-4xl text-text-primary mb-2">Events</h1>
+        <p class="font-sans text-text-secondary">Meetups, CTFs and workshops hosted by VSec.</p>
+      </div>
+      <div class="flex gap-6 flex-shrink-0 text-right">
+        <div>
+          <p class="font-mono font-bold text-3xl text-accent">{upcoming.length}</p>
+          <p class="font-mono text-xs text-text-muted">upcoming</p>
+        </div>
+        <div>
+          <p class="font-mono font-bold text-3xl text-text-secondary">{allEvents.length}</p>
+          <p class="font-mono text-xs text-text-muted">total</p>
+        </div>
+      </div>
+    </div>
+
+    <SearchFilter listId="events-list" placeholder="Search events…" />
+
+    <div id="events-list">
+      {upcoming.length > 0 && (
+        <section class="mb-16" data-search-section>
+          <h2 class="font-mono text-xs text-text-muted tracking-widest uppercase mb-6 flex items-center gap-3">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent"></span>
+            Upcoming
+          </h2>
+          <div class="flex flex-col gap-4">
+            {upcoming.map(event => (
+              <div
+                class="card flex flex-col md:flex-row md:items-center gap-6"
+                data-search-text={`${event.data.title} ${event.data.description} ${event.data.location} ${event.data.type}`.toLowerCase()}
+                data-search-tags={event.data.type}
+              >
+                <div class="flex-shrink-0 w-16 text-center font-mono">
+                  <p class="text-3xl font-bold text-accent leading-none">
+                    {event.data.date.toLocaleDateString('en-GB', { day: '2-digit' })}
+                  </p>
+                  <p class="text-xs text-text-muted uppercase tracking-widest mt-1">
+                    {event.data.date.toLocaleDateString('en-GB', { month: 'short' })}
+                  </p>
+                  <p class="text-xs text-text-muted">
+                    {event.data.date.getFullYear()}
+                  </p>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <span class="tag">{typeLabel[event.data.type]}</span>
+                    <span class="font-mono text-xs text-text-muted flex items-center gap-1">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      {event.data.location}
+                    </span>
+                  </div>
+                  <h3 class="font-mono font-semibold text-text-primary">{event.data.title}</h3>
+                  <p class="font-sans text-sm text-text-secondary mt-1">{event.data.description}</p>
+                </div>
+                {event.data.link && (
+                  <a href={event.data.link} target="_blank" rel="noopener" class="btn-primary text-sm flex-shrink-0">
+                    Register
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {past.length > 0 && (
+        <section data-search-section>
+          <h2 class="font-mono text-xs text-text-muted tracking-widest uppercase mb-6 flex items-center gap-3">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-text-muted"></span>
+            Past
+          </h2>
+          <div class="flex flex-col gap-3 opacity-60">
+            {past.map(event => (
+              <div
+                class="card flex flex-col md:flex-row md:items-center gap-4"
+                data-search-text={`${event.data.title} ${event.data.description} ${event.data.location} ${event.data.type}`.toLowerCase()}
+                data-search-tags={event.data.type}
+              >
+                <div class="flex-shrink-0 font-mono text-sm text-text-muted">
+                  {event.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+                <span class="tag">{typeLabel[event.data.type]}</span>
+                <p class="font-mono text-sm text-text-secondary">{event.data.title}</p>
+                <span class="font-mono text-xs text-text-muted md:ml-auto">{event.data.location}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </div>
+
+</Layout>

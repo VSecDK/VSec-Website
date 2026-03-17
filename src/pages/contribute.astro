@@ -1,0 +1,79 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+
+const steps = [
+  {
+    n: '01',
+    title: 'Join Discord',
+    desc: 'Start by joining our Discord server and introduce yourself in #introductions. This is where most of the community\'s daily dialogue happens.',
+  },
+  {
+    n: '02',
+    title: 'Find a project or write a post',
+    desc: 'You can contribute by writing a community post, helping with an existing project, or suggesting something new. Check out our GitHub organisation.',
+  },
+  {
+    n: '03',
+    title: 'Open an issue or a PR',
+    desc: 'For projects: open an issue with your idea or submit a pull request. We review all contributions and provide feedback.',
+  },
+  {
+    n: '04',
+    title: 'Follow our code of conduct',
+    desc: 'All contributors are expected to follow our code of conduct. This ensures a safe and inclusive environment.',
+  },
+];
+---
+
+<Layout title="Contribution Guide" description="How to contribute to the VSec community">
+
+  <div class="max-w-3xl mx-auto px-6 py-16">
+    <p class="section-label">// Open source</p>
+    <h1 class="font-mono font-bold text-4xl text-text-primary mb-2">Contribution Guide</h1>
+    <p class="font-sans text-text-secondary mb-16 leading-relaxed">
+      VSec is 100% community-driven. Here is how to get started contributing.
+    </p>
+
+    <!-- Steps -->
+    <div class="flex flex-col gap-0">
+      {steps.map((step, i) => (
+        <div class="flex gap-6 relative">
+          <!-- Timeline connector -->
+          <div class="flex flex-col items-center flex-shrink-0">
+            <div class="w-10 h-10 rounded border border-accent/30 bg-accent/5 flex items-center justify-center font-mono text-xs font-bold text-accent flex-shrink-0">
+              {step.n}
+            </div>
+            {i < steps.length - 1 && (
+              <div class="w-px flex-1 bg-border my-2"></div>
+            )}
+          </div>
+
+          <div class:list={['pb-10', i === steps.length - 1 ? 'pb-0' : '']}>
+            <h2 class="font-mono font-semibold text-text-primary mt-2 mb-2">{step.title}</h2>
+            <p class="font-sans text-sm text-text-secondary leading-relaxed">{step.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Valuable Contributors -->
+    <div class="mt-16 pt-8 border-t border-border">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-2">Valuable Contributors</h2>
+      <div class="p-5 rounded-lg border border-dashed border-border">
+        <p class="font-mono text-xs text-text-muted">// Function under development</p>
+      </div>
+    </div>
+
+    <!-- Useful links -->
+    <div class="mt-16 pt-8 border-t border-border space-y-4">
+      <h2 class="font-mono font-bold text-xl text-text-primary">Useful links</h2>
+      <div class="flex flex-wrap gap-4">
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-primary">GitHub organisation</a>
+        <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener" class="btn-ghost">Discord</a>
+        <a href="/about#code-of-conduct" class="btn-ghost">Code of conduct</a>
+      </div>
+    </div>
+  </div>
+
+</Layout>

@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const all = (await getCollection('learning'))
+  .sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0));
+
+// Group by category
+const grouped = all.reduce<Record<string, typeof all>>((acc, c) => {
+  const key = c.data.category ?? 'Other';
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(c);
+  return acc;
+}, {});
+
+const order = ['CTF Platforms', 'Online Courses', 'Application Security', 'Offensive Security', 'Documentation', 'Videos & Blogs', 'Security Podcasts', 'Other'];
+const sortedGroups = order
+  .filter(k => grouped[k])
+  .map(k => ({ label: k, items: grouped[k] }));
+---
+
+<Layout title="Learning" description="Curated learning resources for cybersecurity">
+
+  <div class="max-w-6xl mx-auto px-6 py-16">
+    <div class="flex items-start justify-between gap-8 mb-12">
+      <div>
+        <p class="section-label">// Resources</p>
+        <h1 class="font-mono font-bold text-4xl text-text-primary mb-2">Learning</h1>
+        <p class="font-sans text-text-secondary max-w-lg leading-relaxed">
+          A curated list of learning platforms, courses, and documentation within cybersecurity.
+        </p>
+      </div>
+      <div class="flex-shrink-0 text-right">
+        <p class="font-mono font-bold text-3xl text-accent">{all.length}</p>
+        <p class="font-mono text-xs text-text-muted mb-3">resources</p>
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-ghost text-sm">
+          Suggest a resource
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M7 17L17 7M17 7H7M17 7v10"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="space-y-14">
+      {sortedGroups.map(group => (
+        <section>
+          <h2 class="font-mono text-xs text-text-muted tracking-[0.2em] uppercase mb-5 flex items-center gap-3">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent/50"></span>
+            {group.label}
+          </h2>
+
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {group.items.map(c => (
+              <a
+                href={c.data.link}
+                target="_blank"
+                rel="noopener"
+                class="card group flex items-start gap-4"
+              >
+                <!-- Logo / fallback -->
+                <div class="flex-shrink-0 w-10 h-10 rounded border border-border bg-bg-elevated flex items-center justify-center overflow-hidden">
+                  {c.data.logo ? (
+                    <>
+                      <img
+                        src={c.data.logo}
+                        alt={c.data.name}
+                        width="24"
+                        height="24"
+                        class="w-6 h-6 object-contain"
+                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                      />
+                      <span class="font-mono font-bold text-sm text-accent w-full h-full items-center justify-center hidden">
+                        {c.data.name.charAt(0)}
+                      </span>
+                    </>
+                  ) : (
+                    <span class="font-mono font-bold text-sm text-accent">
+                      {c.data.name.charAt(0)}
+                    </span>
+                  )}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200 truncate">
+                      {c.data.name}
+                    </h3>
+                    {c.data.featured && (
+                      <span class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono rounded border border-accent/20 bg-accent/5 text-accent/70 leading-none">
+                        featured
+                      </span>
+                    )}
+                  </div>
+                  <p class="font-sans text-xs text-text-secondary leading-relaxed line-clamp-2 mb-2">
+                    {c.data.description}
+                  </p>
+                  <div class="flex flex-wrap gap-1.5">
+                    {c.data.tags.map(tag => (
+                      <span class="tag text-[10px] py-0">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Add resource -->
+    <div class="mt-16 p-8 rounded-lg border border-dashed border-border text-center">
+      <p class="font-mono text-sm text-text-primary mb-1">Know a resource that's missing?</p>
+      <p class="font-sans text-xs text-text-muted mb-5">
+        Create a new markdown file in <code class="font-mono text-accent/70">src/content/learning/</code> and open a pull request.
+      </p>
+      <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-primary text-sm">
+        Contribute on GitHub
+      </a>
+    </div>
+  </div>
+
+</Layout>

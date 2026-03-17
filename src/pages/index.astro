@@ -1,0 +1,546 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { resolveAvatar, getInitials } from '../lib/avatar';
+
+type TypeConfig = { label: string; style: string };
+const typeConfig: Record<string, TypeConfig> = {
+  ransomware:      { label: 'Ransomware',   style: 'text-red-400/80 border-red-400/20 bg-red-400/5' },
+  dataleak:        { label: 'Data Leak',    style: 'text-orange-400/80 border-orange-400/20 bg-orange-400/5' },
+  hacking:         { label: 'Hacking',      style: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5' },
+  'supply-chain':  { label: 'Supply chain', style: 'text-purple-400/80 border-purple-400/20 bg-purple-400/5' },
+  unknown:         { label: 'Unknown',      style: 'text-text-muted border-border bg-white/4' },
+};
+
+function getTypeConfig(t: string): TypeConfig {
+  return typeConfig[t.toLowerCase()] ?? {
+    label: t.charAt(0).toUpperCase() + t.slice(1),
+    style: 'text-accent/80 border-accent/20 bg-accent/5',
+  };
+}
+
+const posts = (await getCollection('posts'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const todayStr = new Date().toLocaleDateString('sv-SE');
+const events = (await getCollection('events'))
+  .filter(e => e.data.date.toISOString().slice(0, 10) >= todayStr)
+  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
+  .slice(0, 2);
+
+const tierOrder = { guld: 0, sølv: 1, bronze: 2 } as const;
+const tierStyle = {
+  guld:   'border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50',
+  sølv:   'border-slate-400/30 bg-slate-400/5 hover:border-slate-400/50',
+  bronze: 'border-orange-700/30 bg-orange-700/5 hover:border-orange-700/50',
+} as const;
+const tierLabel = { guld: '★ Gold', sølv: '★ Silver', bronze: '★ Bronze' } as const;
+
+const sponsors = (await getCollection('sponsors'))
+  .sort((a, b) => tierOrder[a.data.tier] - tierOrder[b.data.tier]);
+
+const communities = (await getCollection('communities'))
+  .sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0));
+
+const allMembers = (await getCollection('members'))
+  .sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0));
+
+// Serializable object for client-side JS
+const membersJson = allMembers.map(m => ({
+  name:          m.data.name,
+  handle:        m.data.handle,
+  bio:           m.data.bio ?? null,
+  verified:      m.data.verified,
+  featured:      m.data.featured,
+  roles:         m.data.roles,
+  avatarUrl:     resolveAvatar({ discordAvatar: m.data.discordAvatar, avatar: m.data.avatar, github: m.data.github }),
+  initials:      getInitials(m.data.name),
+}));
+
+const allPosts = await getCollection('posts');
+const allEvents = await getCollection('events');
+const allIncidents = (await getCollection('incidents'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const recentCases = allIncidents.slice(0, 4);
+
+let githubProjectCount = 0;
+try {
+  const ghRes = await fetch('https://api.github.com/orgs/VSecDK/repos?per_page=100&type=public', {
+    headers: { 'Accept': 'application/vnd.github+json' }
+  });
+  if (ghRes.ok) {
+    const ghData = await ghRes.json() as { visibility: string; archived: boolean }[];
+    githubProjectCount = ghData.filter(r => r.visibility === 'public' && !r.archived).length;
+  }
+} catch {}
+
+const stats = [
+  { value: allMembers.length,      label: 'Members' },
+  { value: allPosts.length,        label: 'Posts' },
+  { value: allEvents.length,       label: 'Events' },
+  { value: githubProjectCount,     label: 'Projects' },
+  { value: communities.length,     label: 'Communities' },
+  { value: allIncidents.length,    label: 'Incidents' },
+];
+---
+
+<Layout title="Home" description="VSec – The Danish non-profit infosec community">
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-border">
+    <!-- Grid background -->
+    <div class="absolute inset-0 bg-grid-pattern bg-grid opacity-100 pointer-events-none"></div>
+    <!-- Glow -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+    <div class="relative max-w-6xl mx-auto px-6 py-28 md:py-36">
+      <p class="section-label mb-6">// Danish infosec community</p>
+
+      <h1 class="font-mono font-bold text-5xl md:text-7xl text-text-primary leading-[1.05] tracking-tight mb-6">
+        We build<br />
+        <span class="text-accent">security</span><br />
+        together.
+      </h1>
+
+      <p class="font-sans text-lg text-text-secondary max-w-lg leading-relaxed mb-10">
+        VSec is a non-profit community for Danish infosec professionals and enthusiasts.
+        Share knowledge, participate in events, and be part of a strong network.
+      </p>
+
+      <div class="flex flex-wrap gap-4">
+        <a href="/posts" class="btn-primary">
+          Read posts
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener" class="btn-ghost">
+          Join on Discord
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="flex flex-wrap gap-8 mt-16 pt-8 border-t border-border">
+        {stats.map(stat => (
+          <div>
+            <p class="font-mono font-bold text-2xl text-text-primary">{stat.value}</p>
+            <p class="font-mono text-xs text-text-muted mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest posts -->
+  <section class="max-w-6xl mx-auto px-6 py-20">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <p class="section-label">// Community</p>
+        <h2 class="font-mono font-bold text-2xl text-text-primary">Latest posts</h2>
+      </div>
+      <a href="/posts" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+        All posts →
+      </a>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      {posts.map(post => (
+        <a href={`/posts/${post.slug}`} class="card group flex flex-col gap-4">
+          <div class="flex flex-wrap gap-2">
+            {post.data.tags.slice(0, 2).map(tag => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+          <h3 class="font-mono font-semibold text-text-primary group-hover:text-accent transition-colors duration-200 leading-snug">
+            {post.data.title}
+          </h3>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed flex-1">
+            {post.data.description}
+          </p>
+          <div class="flex items-center justify-between pt-2 border-t border-border">
+            <span class="font-mono text-xs text-text-muted">{post.data.author}</span>
+            {post.data.readingTime && (
+              <span class="font-mono text-xs text-text-muted">{post.data.readingTime}</span>
+            )}
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Members -->
+  <section class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <p class="section-label">// Community</p>
+          <h2 class="font-mono font-bold text-2xl text-text-primary">Verified members</h2>
+        </div>
+        <a href="/members" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+          All members →
+        </a>
+      </div>
+
+      <!-- Grid populated by JS -->
+      <div
+        id="members-grid"
+        class="grid sm:grid-cols-2 gap-5 transition-opacity duration-500"
+        aria-live="polite"
+        aria-label="Members"
+      ></div>
+
+      <!-- Pagination dots -->
+      <div id="members-dots" class="flex justify-center gap-2 mt-8" role="group" aria-label="Pages"></div>
+
+      <script is:inline define:vars={{ membersJson }}>
+        // Read colors from CSS variables so the carousel follows theme changes
+        function getColors() {
+          const s = getComputedStyle(document.documentElement);
+          const ch = (v) => s.getPropertyValue(v).trim().split(' ').map(Number);
+          const rgb  = ([r, g, b]) => `rgb(${r},${g},${b})`;
+          const rgba = ([r, g, b], a) => `rgba(${r},${g},${b},${a})`;
+
+          const accent = ch('--accent');
+          const bgSurface  = ch('--bg-surface');
+          const bgElevated = ch('--bg-elevated');
+          const textPrimary   = ch('--text-primary');
+          const textSecondary = ch('--text-secondary');
+          const textMuted     = ch('--text-muted');
+          const border = s.getPropertyValue('--border-color').trim();
+
+          return {
+            accent:       rgb(accent),
+            accentBorder: rgba(accent, 0.2),
+            accentBg:     rgba(accent, 0.05),
+            accentText:   rgba(accent, 0.8),
+            bgSurface:    rgb(bgSurface),
+            bgElevated:   rgb(bgElevated),
+            border,
+            textPrimary:   rgb(textPrimary),
+            textSecondary: rgb(textSecondary),
+            textMuted:     rgb(textMuted),
+            dotInactive:   rgba(textMuted, 0.4),
+          };
+        }
+
+        const PER_PAGE = 2;
+        const MAX_PAGES = 10;
+        const INTERVAL = 20000;
+        const members = membersJson.slice().sort(() => Math.random() - 0.5);
+        const pageCount = Math.min(Math.ceil(members.length / PER_PAGE), MAX_PAGES);
+        let current = 0;
+        let timer;
+
+        const grid   = document.getElementById('members-grid');
+        const dotsEl = document.getElementById('members-dots');
+
+        function buildCard(m) {
+          const C = getColors();
+          const avatarHtml = m.avatarUrl
+            ? `<img src="${m.avatarUrl}" alt="${m.name}" width="60" height="60"
+                 style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:1px solid ${C.border}"
+                 onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+              + `<div style="display:none;width:60px;height:60px;border-radius:50%;border:1px solid ${C.border};background:${C.bgElevated};color:${C.accent};align-items:center;justify-content:center;font-family:monospace;font-weight:700;font-size:16px">${m.initials}</div>`
+            : `<div style="width:60px;height:60px;border-radius:50%;border:1px solid ${C.border};background:${C.bgElevated};color:${C.accent};display:flex;align-items:center;justify-content:center;font-family:monospace;font-weight:700;font-size:16px">${m.initials}</div>`;
+
+          const badge = m.verified
+            ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-label="Verified" role="img">
+                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  stroke="${C.accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+            : '';
+
+          const roles = m.roles.slice(0, 3).map(r =>
+            `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:11px;font-family:monospace;border:1px solid ${C.accentBorder};background:${C.accentBg};color:${C.accentText};border-radius:3px;text-transform:uppercase;letter-spacing:0.08em">${r}</span>`
+          ).join('');
+
+          const bio = m.bio
+            ? `<p style="font-size:13px;color:${C.textSecondary};line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${m.bio}</p>`
+            : '';
+
+          return `
+            <div style="background:${C.bgSurface};border:1px solid ${C.border};border-radius:8px;padding:24px;display:flex;align-items:flex-start;gap:16px;height:100%;box-sizing:border-box;transition:border-color 0.3s,background 0.3s" onmouseover="this.style.borderColor='${C.accentBorder}';this.style.background='${C.bgElevated}'" onmouseout="this.style.borderColor='${C.border}';this.style.background='${C.bgSurface}'">
+              <div style="flex-shrink:0">${avatarHtml}</div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+                  <span style="font-family:monospace;font-weight:600;font-size:15px;color:${C.textPrimary}">${m.name}</span>
+                  ${badge}
+                  <span style="font-family:monospace;font-size:12px;color:${C.textMuted}">@${m.handle}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${roles}</div>
+                ${bio}
+              </div>
+            </div>`;
+        }
+
+        function buildDots() {
+          const C = getColors();
+          dotsEl.innerHTML = Array.from({ length: pageCount }, (_, i) =>
+            `<button data-i="${i}" aria-label="Page ${i + 1}" aria-pressed="${i === current}" style="width:6px;height:6px;border-radius:50%;border:none;cursor:pointer;transition:background 0.3s,transform 0.3s;background:${i === current ? C.accent : C.dotInactive};transform:${i === current ? 'scale(1.4)' : 'scale(1)'}"></button>`
+          ).join('');
+          dotsEl.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+              clearInterval(timer);
+              goTo(+btn.dataset.i);
+              startTimer();
+            });
+            btn.addEventListener('keydown', (e) => {
+              if (e.key === 'ArrowRight') { clearInterval(timer); goTo((current + 1) % pageCount); startTimer(); }
+              if (e.key === 'ArrowLeft')  { clearInterval(timer); goTo((current - 1 + pageCount) % pageCount); startTimer(); }
+            });
+          });
+        }
+
+        function render() {
+          const slice = members.slice(current * PER_PAGE, current * PER_PAGE + PER_PAGE);
+          grid.innerHTML = slice.map(buildCard).join('');
+          buildDots();
+        }
+
+        function goTo(page) {
+          current = page;
+          grid.setAttribute('aria-busy', 'true');
+          grid.style.opacity = '0';
+          setTimeout(() => {
+            render();
+            grid.style.opacity = '1';
+            grid.setAttribute('aria-busy', 'false');
+          }, 300);
+        }
+
+        function startTimer() {
+          timer = setInterval(() => goTo((current + 1) % pageCount), INTERVAL);
+        }
+
+        // Re-render immediately on theme change
+        new MutationObserver(() => render())
+          .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+        goTo(0);
+        if (pageCount > 1) startTimer();
+      </script>
+    </div>
+  </section>
+
+  <!-- Upcoming events -->
+  <section class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <p class="section-label">// Calendar</p>
+          <h2 class="font-mono font-bold text-2xl text-text-primary">Upcoming events</h2>
+        </div>
+        <a href="/events" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+          All events →
+        </a>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        {events.map(event => (
+          <div class="card flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            <div class="flex-shrink-0 font-mono text-center md:text-left">
+              <p class="text-2xl font-bold text-accent">
+                {event.data.date.toLocaleDateString('en-GB', { day: '2-digit' })}
+              </p>
+              <p class="text-xs text-text-muted uppercase tracking-widest">
+                {event.data.date.toLocaleDateString('en-GB', { month: 'short' })}
+              </p>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <span class="tag">{event.data.type}</span>
+                <span class="font-mono text-xs text-text-muted">{event.data.location}</span>
+              </div>
+              <h3 class="font-mono font-semibold text-text-primary">{event.data.title}</h3>
+              <p class="font-sans text-sm text-text-secondary mt-1">{event.data.description}</p>
+            </div>
+            {event.data.link && (
+              <a
+                href={event.data.link}
+                target="_blank"
+                rel="noopener"
+                class="btn-ghost text-xs flex-shrink-0"
+              >
+                Register
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest incidents -->
+  <section class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <p class="section-label">// CTI League</p>
+          <h2 class="font-mono font-bold text-2xl text-text-primary">Latest incidents</h2>
+          <p class="font-sans text-sm text-text-secondary mt-1">Documented Danish cybersecurity incidents.</p>
+        </div>
+        <a href="/incidents" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+          All incidents →
+        </a>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        {recentCases.map(entry => {
+          const tc = getTypeConfig(entry.data.type);
+          return (
+            <a
+              href={`/incidents/${entry.slug}`}
+              class="card group flex items-start gap-4 hover:border-accent/20 transition-all duration-200"
+            >
+              <div class="flex-shrink-0 font-mono text-xs text-text-muted pt-0.5 w-24">
+                {entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </div>
+              <div class="flex-1 min-w-0 flex flex-wrap items-center gap-2">
+                <span class:list={['tag text-[10px] py-0 flex-shrink-0', tc.style]}>{tc.label}</span>
+                <span class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200 truncate">
+                  {entry.data.company}
+                </span>
+                {entry.data.sector && (
+                  <span class="font-sans text-xs text-text-muted hidden sm:inline">{entry.data.sector}</span>
+                )}
+              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" class="text-text-muted group-hover:text-accent flex-shrink-0 mt-0.5 transition-colors duration-200">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- Communities -->
+  <section class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <p class="section-label">// Network</p>
+          <h2 class="font-mono font-bold text-2xl text-text-primary">Communities</h2>
+          <p class="font-sans text-sm text-text-secondary mt-1">Other places in the security community worth knowing.</p>
+        </div>
+        <a href="/communities" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+          See all →
+        </a>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {communities.map(c => (
+          <a
+            href={c.data.link}
+            target="_blank"
+            rel="noopener"
+            class="card group flex items-start gap-4"
+          >
+            <!-- Logo / fallback (index) -->
+            <div class="flex-shrink-0 w-10 h-10 rounded border border-border bg-bg-elevated flex items-center justify-center overflow-hidden">
+              {c.data.logo ? (
+                <img
+                  src={c.data.logo}
+                  alt={c.data.name}
+                  width="24"
+                  height="24"
+                  class="w-6 h-6 object-contain"
+                  onerror="this.style.display='none';this.nextSibling.style.display='flex'"
+                />
+                <span class="font-mono font-bold text-sm text-accent hidden items-center justify-center w-full h-full">
+                  {c.data.name.charAt(0)}
+                </span>
+              ) : (
+                <span class="font-mono font-bold text-sm text-accent">
+                  {c.data.name.charAt(0)}
+                </span>
+              )}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200 truncate">
+                  {c.data.name}
+                </h3>
+                {c.data.featured && (
+                  <span class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-accent" title="Featured"></span>
+                )}
+              </div>
+              <p class="font-sans text-xs text-text-secondary leading-relaxed line-clamp-2">
+                {c.data.description}
+              </p>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                {c.data.tags.slice(0, 3).map(tag => (
+                  <span class="tag text-[10px] py-0">{tag}</span>
+                ))}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to action -->
+  <section class="border-t border-border bg-bg-surface">
+    <div class="max-w-6xl mx-auto px-6 py-20 text-center">
+      <p class="section-label justify-center flex mb-4">// Get involved</p>
+      <h2 class="font-mono font-bold text-3xl md:text-4xl text-text-primary mb-4">
+        Ready to contribute?
+      </h2>
+      <p class="font-sans text-text-secondary max-w-md mx-auto mb-8 leading-relaxed">
+        VSec thrives on community. Share your knowledge, write a post, or help with a project.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="/contribute" class="btn-primary">Contribution guide</a>
+        <a href="/about" class="btn-ghost">About VSec</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sponsors -->
+  <section class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-16 text-center">
+      <p class="section-label justify-center flex mb-3">// Thank you for your support</p>
+      <p class="font-sans text-sm text-text-secondary max-w-lg mx-auto leading-relaxed mb-10">
+        VSec is a non-profit community run by volunteers. We are grateful for the support from
+        our sponsors, who make it possible to host events, run infrastructure, and grow
+        as a community.
+      </p>
+
+      {sponsors.length > 0 && (
+        <div class="flex flex-wrap items-center justify-center gap-6">
+          {sponsors.map(s => (
+            <a
+              href={s.data.website}
+              target="_blank"
+              rel="noopener"
+              class:list={[
+                'flex flex-col items-center gap-3 px-8 py-5 rounded-lg border transition-all duration-300',
+                tierStyle[s.data.tier],
+              ]}
+            >
+              {s.data.logo ? (
+                <img src={s.data.logo} alt={s.data.name} class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity" />
+              ) : (
+                <span class="font-mono font-semibold text-text-primary">{s.data.name}</span>
+              )}
+              <span class="font-mono text-[10px] tracking-widest uppercase text-text-muted">
+                {tierLabel[s.data.tier]}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div class="mt-10 space-y-2">
+        <p class="font-mono text-xs text-text-muted">Interested in sponsoring VSec?</p>
+        <a href="mailto:info@vsec.dk" class="font-mono text-xs text-accent/70 hover:text-accent transition-colors duration-200">
+          info@vsec.dk →
+        </a>
+      </div>
+    </div>
+  </section>
+
+</Layout>

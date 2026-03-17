@@ -1,0 +1,52 @@
+---
+interface Props {
+  timeline: string;
+}
+
+const { timeline } = Astro.props;
+
+// Parse markdown list items into { date, description } pairs
+const entries = timeline
+  .split('\n')
+  .filter(line => line.trim().startsWith('- '))
+  .map(line => {
+    const content = line.trim().slice(2); // remove leading '- '
+    const colonIdx = content.indexOf(':');
+    if (colonIdx === -1) return { date: '', description: content };
+    return {
+      date: content.slice(0, colonIdx).trim(),
+      description: content.slice(colonIdx + 1).trim(),
+    };
+  })
+  .filter(e => e.description);
+---
+
+{entries.length > 0 && (
+  <div class="relative">
+    <!-- Vertical rail -->
+    <div class="absolute left-[7px] top-2 bottom-2 w-px bg-gradient-to-b from-accent/30 via-border to-transparent"></div>
+
+    <ol class="space-y-0">
+      {entries.map((entry, i) => (
+        <li class="relative flex gap-5 pb-7 last:pb-0 group">
+
+          <!-- Node -->
+          <div class="relative flex-shrink-0 mt-[3px]">
+            <div class="w-[15px] h-[15px] rounded-full border border-accent/40 bg-bg-base flex items-center justify-center z-10 relative group-hover:border-accent/80 transition-colors duration-200">
+              <div class="w-[5px] h-[5px] rounded-full bg-accent/60 group-hover:bg-accent transition-colors duration-200"></div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="flex flex-col gap-0.5 min-w-0 pt-px">
+            {entry.date && (
+              <span class="font-mono text-[11px] text-accent/70 tracking-wide leading-none">{entry.date}</span>
+            )}
+            <p class="font-sans text-sm text-text-secondary leading-snug">{entry.description}</p>
+          </div>
+
+        </li>
+      ))}
+    </ol>
+  </div>
+)}

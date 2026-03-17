@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Theme: dark (default) ──────────────────────────────────────────────── */
+:root {
+  --bg-base:       8 12 16;
+  --bg-surface:    15 20 25;
+  --bg-elevated:   22 29 38;
+  --accent:        0 229 160;
+  --text-primary:  232 237 242;
+  --text-secondary:122 138 153;
+  --text-muted:    74 90 105;
+  --border-color:  rgba(255, 255, 255, 0.07);
+  --grid-line:     rgba(0, 229, 160, 0.03);
+  --scrollbar-track: #080c10;
+}
+
+/* ─── Theme: light ───────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:       248 250 252;
+  --bg-surface:    241 245 249;
+  --bg-elevated:   226 232 240;
+  --accent:        0 140 100;
+  --text-primary:  15 23 42;
+  --text-secondary:71 85 105;
+  --text-muted:    148 163 184;
+  --border-color:  rgba(0, 0, 0, 0.09);
+  --grid-line:     rgba(0, 140, 100, 0.05);
+  --scrollbar-track: #f8fafc;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: rgb(var(--bg-base));
+    color: rgb(var(--text-primary));
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: rgb(var(--accent) / 0.2);
+    color: rgb(var(--text-primary));
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--accent) / 0.25);
+    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .tag {
+    @apply inline-flex items-center px-2 py-0.5 text-xs font-mono rounded border border-accent/20 bg-accent/5 text-accent/80 tracking-wider uppercase;
+  }
+
+  .card {
+    @apply bg-bg-surface border border-border rounded-lg p-6 transition-all duration-300;
+    @apply hover:border-accent/20 hover:bg-bg-elevated;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-bg-base font-mono font-semibold text-sm rounded
+           transition-all duration-200 hover:bg-accent/90 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 text-text-secondary font-mono text-sm rounded border border-border
+           transition-all duration-200 hover:border-accent/30 hover:text-text-primary hover:bg-bg-elevated active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .section-label {
+    @apply font-mono text-xs text-accent/70 tracking-[0.2em] uppercase mb-2;
+  }
+}

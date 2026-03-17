@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+
+  <article class="max-w-3xl mx-auto px-6 py-16">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 font-mono text-xs text-text-muted mb-10">
+      <a href="/" class="hover:text-accent transition-colors">VSec</a>
+      <span>/</span>
+      <a href="/posts" class="hover:text-accent transition-colors">posts</a>
+      <span>/</span>
+      <span class="text-text-secondary truncate">{post.data.title}</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-12 pb-8 border-b border-border">
+      <div class="flex flex-wrap gap-2 mb-4">
+        {post.data.tags.map(tag => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+      <h1 class="font-mono font-bold text-3xl md:text-4xl text-text-primary leading-tight mb-4">
+        {post.data.title}
+      </h1>
+      <div class="flex items-center gap-4 font-mono text-xs text-text-muted">
+        <span>{post.data.author}</span>
+        <span class="text-border">·</span>
+        <span>{post.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+        {post.data.readingTime && (
+          <>
+            <span class="text-border">·</span>
+            <span class="text-accent/60">{post.data.readingTime} read</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="prose prose-invert max-w-none
+      prose-headings:font-mono prose-headings:font-semibold prose-headings:text-text-primary prose-headings:tracking-tight
+      prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4
+      prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3
+      prose-p:font-sans prose-p:text-text-secondary prose-p:leading-[1.8] prose-p:my-4
+      prose-ul:my-4 prose-ul:space-y-2
+      prose-ol:my-4 prose-ol:space-y-2
+      prose-li:font-sans prose-li:text-text-secondary prose-li:leading-relaxed
+      prose-a:text-accent prose-a:no-underline hover:prose-a:underline
+      prose-code:font-mono prose-code:text-accent/80 prose-code:bg-accent/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+      prose-pre:bg-bg-surface prose-pre:border prose-pre:border-border prose-pre:rounded-lg
+      prose-strong:text-text-primary prose-strong:font-semibold
+      prose-hr:border-border prose-hr:my-8">
+      <Content />
+    </div>
+
+    <!-- Back -->
+    <div class="mt-16 pt-8 border-t border-border">
+      <a href="/posts" class="btn-ghost text-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        All posts
+      </a>
+    </div>
+
+  </article>
+
+</Layout>

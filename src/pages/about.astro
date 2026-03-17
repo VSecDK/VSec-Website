@@ -1,0 +1,367 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { resolveAvatar, getInitials } from '../lib/avatar';
+
+const allMembers = await getCollection('members');
+const founder = allMembers
+  .filter(m => m.data.roles.some(r => r.toLowerCase() === 'administrator'))
+  .sort((a, b) => a.slug.localeCompare(b.slug))[0];
+const founderAvatarUrl = founder ? resolveAvatar({ discordAvatar: founder.data.discordAvatar, avatar: founder.data.avatar, github: founder.data.github }) : null;
+const founderInitials = founder ? getInitials(founder.data.name) : '';
+---
+
+<Layout title="About VSec" description="About the Danish infosec community VSec">
+
+  <div class="max-w-4xl mx-auto px-6 py-16">
+    <p class="section-label">// Who we are</p>
+    <h1 class="font-mono font-bold text-4xl text-text-primary mb-6">About VSec</h1>
+
+    <div class="grid md:grid-cols-3 gap-12 mb-16">
+      <div class="md:col-span-2 space-y-5 font-sans text-text-secondary leading-relaxed">
+        <p>
+          VSec is a Danish non-profit InfoSec community working to unify the different local infosec
+          groups in Denmark by providing a shared communication platform.
+        </p>
+
+        <!-- Highlighted mission statement -->
+        <blockquote class="border-l-2 border-accent pl-5 py-1 my-2">
+          <p class="font-mono text-text-primary font-semibold leading-relaxed">
+            VSec is a community by the community, for the community.
+          </p>
+        </blockquote>
+
+        <p>
+          All local community crew members have the possibility to be part of the community board
+          channel and directly influence how the community is run — including the code of conduct,
+          guidelines, rules, and events. Each sub-community manages its own channels on the server.
+        </p>
+        <p>
+          We are a community of professionals, students, and enthusiasts who share a passion
+          for information security. Through meetups, CTF competitions, and open
+          projects we create space for learning and networking across experience levels and backgrounds.
+        </p>
+      </div>
+
+      {founder && (
+        <div class="space-y-4">
+          <div class="card text-center">
+            {founderAvatarUrl ? (
+              <img src={founderAvatarUrl} alt={founder.data.name} width="96" height="96"
+                class="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-2 border-accent/20" />
+            ) : (
+              <div class="w-24 h-24 rounded-full border-2 border-accent/20 bg-bg-elevated flex items-center justify-center font-mono font-bold text-2xl text-accent mx-auto mb-3">
+                {founderInitials}
+              </div>
+            )}
+            <p class="font-mono font-semibold text-text-primary text-sm">{founder.data.name}</p>
+            <p class="font-mono text-xs text-text-muted">Founder & Administrator</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+<!-- Contact & Corrections -->
+    <section class="mb-16 grid sm:grid-cols-2 gap-4">
+      <div class="card">
+        <p class="font-mono text-xs text-text-muted uppercase tracking-widest mb-3">Contact</p>
+        <p class="font-sans text-sm text-text-secondary leading-relaxed mb-3">
+          For general enquiries, reach out via email or Discord.
+        </p>
+        <a href="mailto:info@vsec.dk" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+          info@vsec.dk
+        </a>
+      </div>
+      <div class="card">
+        <p class="font-mono text-xs text-text-muted uppercase tracking-widest mb-3">Corrections</p>
+        <p class="font-sans text-sm text-text-secondary leading-relaxed mb-3">
+          If any information on this website is confusing, incorrect, or incomplete, feel free to reach out.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.114 18.102.135 18.115a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            Discord
+          </a>
+          <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Open an issue
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section class="mb-16">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-6">Our values</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        {[
+          { title: 'Openness', icon: '◈', desc: 'Knowledge should be shared freely. We are open about methods, mistakes, and learning.' },
+          { title: 'Community', icon: '◉', desc: 'We lift each other up. All experience levels are welcome.' },
+          { title: 'Ethics', icon: '◎', desc: 'We act responsibly and respect our code of conduct.' },
+        ].map(val => (
+          <div class="card">
+            <p class="font-mono text-2xl text-accent mb-3">{val.icon}</p>
+            <h3 class="font-mono font-semibold text-text-primary mb-2">{val.title}</h3>
+            <p class="font-sans text-sm text-text-secondary leading-relaxed">{val.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Code of conduct -->
+    <section id="code-of-conduct" class="border-t border-border pt-12">
+      <p class="section-label mb-2">// Community rules</p>
+      <h2 class="font-mono font-bold text-2xl text-text-primary mb-2">Code of Conduct</h2>
+      <p class="font-sans text-text-secondary mb-10 leading-relaxed">
+        VSec is an inclusive community. This code of conduct applies to all platforms and events associated with VSec.
+      </p>
+
+      <div class="space-y-8 font-sans text-text-secondary leading-relaxed">
+
+        <section>
+          <h3 class="font-mono font-semibold text-text-primary mb-3">Our pledge</h3>
+          <p>
+            We as members, contributors, and leaders pledge to make participation in our community
+            a harassment-free experience for everyone — regardless of age, body size, visible or invisible
+            disability, ethnicity, sex characteristics, gender identity and expression, level of experience,
+            education, socioeconomic status, nationality, personal appearance, race, caste, color,
+            religion, or sexual identity and orientation.
+          </p>
+        </section>
+
+        <section>
+          <h3 class="font-mono font-semibold text-text-primary mb-3">Our standards</h3>
+          <p class="mb-4">Examples of behavior that contributes to a positive environment:</p>
+          <ul class="space-y-2 list-none mb-6">
+            {[
+              'Demonstrating empathy and kindness toward other people',
+              'Being respectful of differing opinions, viewpoints, and experiences',
+              'Giving and gracefully accepting constructive feedback',
+              'Accepting responsibility and apologizing to those affected by our mistakes',
+              'Focusing on what is best for the overall community',
+            ].map(item => (
+              <li class="flex items-start gap-3">
+                <span class="font-mono text-accent mt-0.5 flex-shrink-0">+</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="mb-4">Examples of unacceptable behavior:</p>
+          <ul class="space-y-2 list-none">
+            {[
+              'The use of sexualized language or imagery, and sexual attention or advances of any kind',
+              'Trolling, insulting or derogatory comments, and personal or political attacks',
+              'Public or private harassment',
+              'Publishing others\' private information without their explicit permission',
+              'Other conduct which could reasonably be considered inappropriate in a professional setting',
+            ].map(item => (
+              <li class="flex items-start gap-3">
+                <span class="font-mono text-red-400/70 mt-0.5 flex-shrink-0">–</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-mono font-semibold text-text-primary mb-3">Enforcement</h3>
+          <p>
+            Instances of abusive, harassing, or otherwise unacceptable behavior may be
+            reported to the community leaders via Discord. All complaints will be reviewed and
+            investigated promptly and fairly.
+          </p>
+        </section>
+
+        <section class="pt-4 border-t border-border">
+          <p class="font-mono text-xs text-text-muted">
+            This code of conduct is inspired by{' '}
+            <a href="https://www.contributor-covenant.org" target="_blank" rel="noopener" class="text-accent/70 hover:text-accent transition-colors">
+              Contributor Covenant v2.1
+            </a>.
+          </p>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- Sustainability -->
+    <section class="mt-16 pt-12 border-t border-border mb-16">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-2">Sustainability</h2>
+      <p class="font-sans text-sm text-text-secondary leading-relaxed mb-8">
+        VSec is committed to operating with a minimal footprint — technically, economically, and environmentally.
+        We deliberately choose tools and providers that align with our values around responsible, sustainable operation.
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-8">
+        <div class="card">
+          <p class="font-mono text-2xl text-accent mb-3">◌</p>
+          <h3 class="font-mono font-semibold text-text-primary mb-2">Minimal footprint</h3>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            We keep our infrastructure lean. No unnecessary services, no bloated stacks.
+            Every tool we run has a clear purpose and is actively used.
+          </p>
+        </div>
+        <div class="card">
+          <p class="font-mono text-2xl text-accent mb-3">◍</p>
+          <h3 class="font-mono font-semibold text-text-primary mb-2">Green technology</h3>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            We prefer providers with a documented commitment to renewable energy and carbon neutrality.
+            Cloudflare operates one of the most energy-efficient global networks, and GitHub's
+            parent company Microsoft has pledged to be carbon negative by 2030.
+          </p>
+        </div>
+        <div class="card">
+          <p class="font-mono text-2xl text-accent mb-3">◎</p>
+          <h3 class="font-mono font-semibold text-text-primary mb-2">UN 2030 Agenda</h3>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            VSec is committed to supporting the{' '}
+            <a href="https://sdgs.un.org/goals" target="_blank" rel="noopener" class="text-accent/70 hover:text-accent transition-colors">
+              UN 2030 Agenda for Sustainable Development
+            </a>{' '}
+            and its 17 Global Goals. Any unused community funds are directed toward initiatives aligned with these goals.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-5 rounded-lg border border-accent/10 bg-accent/3">
+        <p class="font-mono text-xs text-text-muted uppercase tracking-widest mb-3">Why our stack is a sustainable choice</p>
+        <p class="font-sans text-sm text-text-secondary leading-relaxed">
+          By using <strong class="text-text-primary">static site generation with Astro</strong>, the site produces pre-rendered HTML with zero server-side compute at request time —
+          dramatically reducing energy use compared to dynamic server-rendered sites.
+          <strong class="text-text-primary">Cloudflare's edge network</strong> serves content from the node closest to each visitor,
+          cutting unnecessary data travel across the internet. Their network runs on renewable energy and achieves industry-leading
+          efficiency ratios. <strong class="text-text-primary">GitHub</strong> provides free hosting for open source projects,
+          eliminating the need for dedicated servers entirely. Together, this stack lets VSec run a fast, resilient,
+          global platform with near-zero ongoing infrastructure cost and a fraction of the environmental impact of a traditional hosting setup.
+        </p>
+      </div>
+    </section>
+
+    <!-- Infrastructure -->
+    <section class="pt-12 border-t border-border">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-2">Infrastructure</h2>
+      <p class="font-sans text-sm text-text-secondary leading-relaxed mb-6">
+        VSec is built on open, developer-friendly tooling. Everything is open source and community-maintained.
+      </p>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          {
+            name: 'Astro',
+            category: 'Framework',
+            desc: 'Static site generator powering this website. Content collections, zero JS by default, and excellent DX.',
+            href: 'https://astro.build',
+            logo: 'https://icons.duckduckgo.com/ip3/astro.build.ico',
+          },
+          {
+            name: 'Tailwind CSS',
+            category: 'Styling',
+            desc: 'Utility-first CSS framework used for all styling across the site.',
+            href: 'https://tailwindcss.com',
+            logo: 'https://icons.duckduckgo.com/ip3/tailwindcss.com.ico',
+          },
+          {
+            name: 'GitHub',
+            category: 'Source control',
+            desc: 'All source code, content, and CTI League cases are hosted and version-controlled on GitHub under the VSecDK organisation.',
+            href: 'https://github.com/VSecDK',
+            logo: 'https://icons.duckduckgo.com/ip3/github.com.ico',
+          },
+          {
+            name: 'Cloudflare Pages',
+            category: 'Hosting & Deployment',
+            desc: 'The site is deployed and hosted on Cloudflare Pages with automatic builds on every push to main.',
+            href: 'https://pages.cloudflare.com',
+            logo: 'https://icons.duckduckgo.com/ip3/cloudflare.com.ico',
+          },
+          {
+            name: 'Cloudflare DNS & Security',
+            category: 'DNS · Caching · WAF',
+            desc: 'DNS, CDN caching, DDoS protection, and Web Application Firewall are all handled by Cloudflare.',
+            href: 'https://cloudflare.com',
+            logo: 'https://icons.duckduckgo.com/ip3/cloudflare.com.ico',
+          },
+          {
+            name: 'Cloudflare Workers & AI',
+            category: 'Serverless · AI',
+            desc: 'Cloudflare Workers run edge serverless functions. Cloudflare AI Workers are used for AI-powered features on the platform.',
+            href: 'https://workers.cloudflare.com',
+            logo: 'https://icons.duckduckgo.com/ip3/cloudflare.com.ico',
+          },
+        ].map(item => (
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noopener"
+            class="card group flex flex-col gap-3 hover:border-accent/20 transition-all duration-200"
+          >
+            <div class="flex items-center gap-3">
+              <img
+                src={item.logo}
+                alt=""
+                width="28"
+                height="28"
+                class="w-7 h-7 rounded object-contain flex-shrink-0"
+                aria-hidden="true"
+              />
+              <div class="flex flex-col gap-1 flex-1 min-w-0">
+                <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200">
+                  {item.name}
+                </h3>
+                <span class="tag text-[10px] py-0 self-start">{item.category}</span>
+              </div>
+            </div>
+            <p class="font-sans text-xs text-text-secondary leading-relaxed">{item.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- RSS Feeds -->
+    <section class="mt-16 pt-12 border-t border-border">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-2">RSS Feeds</h2>
+      <p class="font-sans text-sm text-text-secondary leading-relaxed mb-6">
+        Subscribe to VSec content in your favourite RSS reader. All three feeds update automatically whenever new content is published.
+      </p>
+      <div class="grid sm:grid-cols-3 gap-4">
+        {[
+          {
+            title: 'Posts',
+            desc: 'Community articles, write-ups, and guides published by VSec members.',
+            href: '/rss/posts.xml',
+          },
+          {
+            title: 'Incidents',
+            desc: 'Curated Danish cybersecurity incidents tracked by the VSec community.',
+            href: '/rss/incidents.xml',
+          },
+          {
+            title: 'Events',
+            desc: 'Meetups, workshops, CTFs and conferences in the Danish infosec scene.',
+            href: '/rss/events.xml',
+          },
+        ].map(feed => (
+          <a
+            href={feed.href}
+            class="card group flex flex-col gap-3 hover:border-orange-400/20 transition-all duration-200"
+          >
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-orange-400 flex-shrink-0">
+                <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
+              </svg>
+              <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-orange-400 transition-colors duration-200">
+                {feed.title}
+              </h3>
+            </div>
+            <p class="font-sans text-xs text-text-secondary leading-relaxed">{feed.desc}</p>
+            <span class="font-mono text-[10px] text-orange-400/60 mt-auto">{feed.href}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+
+</Layout>

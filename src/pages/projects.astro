@@ -1,0 +1,172 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Fetch all repos from the VSecDK GitHub organisation at build time
+type GithubRepo = {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  pushed_at: string;
+  updated_at: string;
+  topics: string[];
+  stargazers_count: number;
+  fork: boolean;
+  archived: boolean;
+  visibility: string;
+};
+
+let repos: GithubRepo[] = [];
+let fetchError = false;
+
+try {
+  const res = await fetch(
+    'https://api.github.com/orgs/VSecDK/repos?per_page=100&sort=pushed&type=public',
+    { headers: { 'Accept': 'application/vnd.github+json' } }
+  );
+  if (res.ok) {
+    const data = await res.json() as GithubRepo[];
+    // Sort: non-forks and non-archived first, then most recently pushed
+    repos = data
+      .filter(r => r.visibility === 'public')
+      .sort((a, b) => {
+        if (a.archived !== b.archived) return a.archived ? 1 : -1;
+        if (a.fork !== b.fork) return a.fork ? 1 : -1;
+        return new Date(b.pushed_at).valueOf() - new Date(a.pushed_at).valueOf();
+      });
+  } else {
+    fetchError = true;
+  }
+} catch {
+  fetchError = true;
+}
+
+const oneYearAgo = new Date();
+oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+function getStatus(repo: GithubRepo) {
+  if (repo.archived) return 'archived';
+  return new Date(repo.pushed_at) >= oneYearAgo ? 'active' : 'inactive';
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+}
+
+const activeCount  = repos.filter(r => !r.archived && new Date(r.pushed_at) >= oneYearAgo).length;
+const passiveCount = repos.filter(r => !r.archived && new Date(r.pushed_at) < oneYearAgo).length;
+
+const statusStyle: Record<string, string> = {
+  active:   'text-accent border-accent/20 bg-accent/5',
+  inactive: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5',
+  archived: 'text-text-muted border-border bg-white/4',
+};
+---
+
+<Layout title="Projects" description="Open source projects from the VSec community on GitHub">
+
+  <div class="max-w-6xl mx-auto px-6 py-16">
+    <div class="flex items-start justify-between gap-8 mb-12">
+      <div>
+        <p class="section-label">// Open source</p>
+        <h1 class="font-mono font-bold text-4xl text-text-primary mb-2">Projects</h1>
+        <p class="font-sans text-text-secondary">
+          All public repositories from
+          <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="text-accent/70 hover:text-accent transition-colors">github.com/VSecDK</a>.
+          Repos with no activity for over a year are marked as inactive.
+        </p>
+      </div>
+      {!fetchError && (
+        <div class="flex gap-6 flex-shrink-0 text-right">
+          <div>
+            <p class="font-mono font-bold text-3xl text-accent">{activeCount}</p>
+            <p class="font-mono text-xs text-text-muted">active</p>
+          </div>
+          <div>
+            <p class="font-mono font-bold text-3xl text-yellow-400/80">{passiveCount}</p>
+            <p class="font-mono text-xs text-text-muted">inactive</p>
+          </div>
+          <div>
+            <p class="font-mono font-bold text-3xl text-text-secondary">{repos.length}</p>
+            <p class="font-mono text-xs text-text-muted">total</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {fetchError ? (
+      <div class="p-8 rounded-lg border border-dashed border-border text-center">
+        <p class="font-mono text-sm text-text-muted mb-2">Could not fetch repos from GitHub.</p>
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-ghost text-sm">
+          Se direkte på GitHub →
+        </a>
+      </div>
+    ) : repos.length === 0 ? (
+      <div class="p-8 rounded-lg border border-dashed border-border text-center">
+        <p class="font-mono text-sm text-text-muted">No public repositories found.</p>
+      </div>
+    ) : (
+      <div class="grid md:grid-cols-2 gap-4">
+        {repos.map(repo => {
+          const status = getStatus(repo);
+          return (
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener"
+              class="card group flex flex-col gap-3"
+            >
+              <!-- Name + status -->
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="font-mono font-semibold text-text-primary group-hover:text-accent transition-colors duration-200 leading-snug">
+                  {repo.name}
+                </h2>
+                <span class:list={['tag flex-shrink-0', statusStyle[status]]}>
+                  {status}
+                </span>
+              </div>
+
+              <!-- Description -->
+              <p class="font-sans text-sm text-text-secondary leading-relaxed flex-1 line-clamp-2">
+                {repo.description ?? 'No description.'}
+              </p>
+
+              <!-- Topics -->
+              {repo.topics.length > 0 && (
+                <div class="flex flex-wrap gap-1.5">
+                  {repo.topics.slice(0, 5).map(t => (
+                    <span class="tag text-[10px] py-0">{t}</span>
+                  ))}
+                </div>
+              )}
+
+              <!-- Footer: date + stars -->
+              <div class="flex items-center justify-between pt-2 border-t border-border mt-auto">
+                <span class="font-mono text-xs text-text-muted">
+                  Last updated: {formatDate(repo.pushed_at)}
+                </span>
+                {repo.stargazers_count > 0 && (
+                  <span class="font-mono text-xs text-text-muted flex items-center gap-1">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400/60">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    {repo.stargazers_count}
+                  </span>
+                )}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    )}
+
+    <div class="mt-16 p-8 rounded-lg border border-dashed border-border text-center">
+      <p class="font-mono text-sm text-text-muted mb-4">Have an idea for a project?</p>
+      <a href="/contribute" class="btn-primary text-sm">See the contribution guide</a>
+    </div>
+  </div>
+
+</Layout>

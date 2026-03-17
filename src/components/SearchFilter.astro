@@ -1,0 +1,75 @@
+---
+interface Props {
+  listId: string;
+  placeholder?: string;
+}
+const { listId, placeholder = 'Search...' } = Astro.props;
+const uid = `sf-${listId}`;
+---
+
+<div class="mb-8" id={uid}>
+  <div class="relative">
+    <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input
+      type="text"
+      id={`${uid}-input`}
+      placeholder={placeholder}
+      autocomplete="off"
+      aria-label={placeholder}
+      class="w-full font-mono text-sm bg-bg-elevated border border-border rounded-lg px-4 py-2.5 pl-9 pr-10 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors duration-200"
+    />
+    <button
+      id={`${uid}-clear`}
+      class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-text-muted hover:text-text-primary transition-colors duration-150 hidden"
+      aria-label="Clear search"
+    >✕</button>
+  </div>
+</div>
+
+<script define:vars={{ uid, listId }} is:inline>
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById(uid + '-input');
+  var clearBtn = document.getElementById(uid + '-clear');
+  var list = document.getElementById(listId);
+  if (!list || !input || !clearBtn) return;
+
+  var emptyMsg = document.createElement('p');
+  emptyMsg.className = 'font-mono text-sm text-text-muted text-center py-12';
+  emptyMsg.textContent = 'No results found.';
+  emptyMsg.style.display = 'none';
+  list.after(emptyMsg);
+
+  function applyFilter() {
+    var query = input.value.trim().toLowerCase();
+    var items = list.querySelectorAll('[data-search-text]');
+    var visibleCount = 0;
+
+    items.forEach(function(item) {
+      var text = (item.getAttribute('data-search-text') || '').toLowerCase();
+      var show = !query || text.includes(query);
+      item.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+
+    list.querySelectorAll('[data-search-section]').forEach(function(section) {
+      var hasVisible = Array.from(section.querySelectorAll('[data-search-text]')).some(function(el) {
+        return el.style.display !== 'none';
+      });
+      section.style.display = hasVisible ? '' : 'none';
+    });
+
+    emptyMsg.style.display = visibleCount === 0 ? '' : 'none';
+    clearBtn.classList.toggle('hidden', !query);
+  }
+
+  input.addEventListener('input', applyFilter);
+
+  clearBtn.addEventListener('click', function() {
+    input.value = '';
+    applyFilter();
+    input.focus();
+  });
+});
+</script>

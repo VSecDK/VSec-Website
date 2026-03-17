@@ -1,0 +1,251 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import IncidentTimeline from '../../components/IncidentTimeline.astro';
+import { getCollection } from 'astro:content';
+import { marked } from 'marked';
+
+type TypeConfig = { label: string; style: string };
+const typeConfig: Record<string, TypeConfig> = {
+  ransomware:      { label: 'Ransomware',   style: 'text-red-400/80 border-red-400/20 bg-red-400/5' },
+  dataleak:        { label: 'Data Leak',    style: 'text-orange-400/80 border-orange-400/20 bg-orange-400/5' },
+  hacking:         { label: 'Hacking',      style: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5' },
+  'supply-chain':  { label: 'Supply chain', style: 'text-purple-400/80 border-purple-400/20 bg-purple-400/5' },
+  unknown:         { label: 'Unknown',      style: 'text-text-muted border-border bg-white/4' },
+};
+
+function getTypeConfig(t: string): TypeConfig {
+  return typeConfig[t.toLowerCase()] ?? {
+    label: t.charAt(0).toUpperCase() + t.slice(1),
+    style: 'text-accent/80 border-accent/20 bg-accent/5',
+  };
+}
+
+// Strip markdown links and bare URLs from text
+function stripLinks(s: string): string {
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/https?:\/\/\S+/g, '')
+    .trim();
+}
+
+export async function getStaticPaths() {
+  const entries = await getCollection('incidents');
+  return entries.map(entry => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const tc = getTypeConfig(entry.data.type);
+const title = `${tc.label} – ${entry.data.company}`;
+
+// Extract a named section from the raw markdown body
+function extractSection(content: string, heading: string): string {
+  const regex = new RegExp(`##\\s+${heading}[\\s\\S]*?(?=\\n##\\s+|$)`, 'i');
+  const match = content.match(regex);
+  if (!match) return '';
+  // Strip the heading line itself
+  return match[0].replace(/^##\s+.+\n?/, '').trim();
+}
+
+const description  = extractSection(entry.body, 'Description');
+const timeline     = extractSection(entry.body, 'Timeline');
+const advisor      = extractSection(entry.body, 'Security advisor');
+const indicators   = extractSection(entry.body, 'Indicators of Compromise');
+const detection    = extractSection(entry.body, 'Detection Rules');
+const references   = extractSection(entry.body, 'References');
+
+// Strip dangerous HTML constructs after marked parsing (XSS protection)
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[^>]*>/gi, '')
+    .replace(/(<[^>]+)\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '$1')
+    .replace(/href\s*=\s*["']?\s*javascript:/gi, 'href="#"');
+}
+
+// Render markdown to HTML
+function md(text: string, keepLinks = false): string {
+  if (!text || text.toLowerCase() === 'tbd' || text.toLowerCase() === 'unknown') return '';
+  const cleaned = keepLinks ? text : stripLinks(text);
+  return sanitizeHtml(marked.parse(cleaned) as string);
+}
+
+// Render references section: convert bare URLs to links
+function renderReferences(text: string): string {
+  if (!text || text.toLowerCase() === 'tbd' || text.toLowerCase() === 'unknown') return '';
+  const withLinks = text.replace(/^(https?:\/\/\S+)/gm, (url) => `- [${url}](${url})`);
+  return sanitizeHtml(marked.parse(withLinks) as string);
+}
+
+const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Layout title={`${entry.data.company} – ${tc.label} | Incidents`} description={`${tc.label} incident: ${entry.data.company}. ${description.slice(0, 120)}`}>
+
+  <div class="max-w-3xl mx-auto px-6 py-16">
+
+    <!-- Back link -->
+    <a href="/incidents" class="inline-flex items-center gap-2 font-mono text-xs text-text-muted hover:text-accent transition-colors mb-10">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Back to incidents
+    </a>
+
+    <!-- Header -->
+    <div class="mb-10">
+      <div class="flex flex-wrap items-center gap-3 mb-4">
+        <span class:list={['tag', tc.style]}>{tc.label}</span>
+        <span class="font-mono text-xs text-text-muted">{dateStr}</span>
+      </div>
+
+      <h1 class="font-mono font-bold text-3xl sm:text-4xl text-text-primary mb-4 leading-tight">
+        {title}
+      </h1>
+
+      <!-- Meta grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
+        {entry.data.company && (
+          <div class="bg-bg-surface border border-border rounded-lg px-4 py-3">
+            <p class="font-mono text-[10px] text-text-muted uppercase tracking-widest mb-1">Company</p>
+            <p class="font-mono text-sm text-text-primary">{entry.data.company}</p>
+          </div>
+        )}
+        {entry.data.sector && (
+          <div class="bg-bg-surface border border-border rounded-lg px-4 py-3">
+            <p class="font-mono text-[10px] text-text-muted uppercase tracking-widest mb-1">Sector</p>
+            <p class="font-mono text-sm text-text-primary">{entry.data.sector}</p>
+          </div>
+        )}
+        {entry.data.actor && entry.data.actor.toLowerCase() !== 'unknown' && (
+          <div class="bg-bg-surface border border-border rounded-lg px-4 py-3">
+            <p class="font-mono text-[10px] text-text-muted uppercase tracking-widest mb-1">Actor</p>
+            <p class="font-mono text-sm text-text-primary">{entry.data.actor}</p>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="h-px bg-border mb-10"></div>
+
+    <!-- Content sections -->
+    <div class="space-y-10">
+
+      {description && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            Description
+          </h2>
+          <div class="prose-cti" set:html={md(description)} />
+        </section>
+      )}
+
+      {timeline && timeline.toLowerCase() !== 'tbd' && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-6 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            Timeline
+          </h2>
+          <IncidentTimeline timeline={timeline} />
+        </section>
+      )}
+
+      {advisor && advisor.toLowerCase() !== 'tbd' && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            Security Advisory
+          </h2>
+          <div class="prose-cti" set:html={md(advisor)} />
+        </section>
+      )}
+
+      {indicators && indicators.toLowerCase() !== 'unknown' && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            Indicators of Compromise (IOC)
+          </h2>
+          <div class="prose-cti font-mono text-sm" set:html={md(indicators, true)} />
+        </section>
+      )}
+
+      {detection && detection.toLowerCase() !== 'unknown' && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            Detection Rules (Yara/Sigma)
+          </h2>
+          <div class="prose-cti font-mono text-sm" set:html={md(detection, true)} />
+        </section>
+      )}
+
+      {references && references.toLowerCase() !== 'tbd' && references.toLowerCase() !== 'unknown' && (
+        <section>
+          <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
+            <span class="text-accent/60 text-sm">##</span>
+            References
+          </h2>
+          <div class="prose-cti" set:html={renderReferences(references)} />
+        </section>
+      )}
+
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-16 pt-8 border-t border-border flex items-center justify-between gap-4 flex-wrap">
+      <a href="/incidents" class="btn-ghost text-sm">
+        ← All incidents
+      </a>
+      <a
+        href={`https://github.com/VSecDK/VSec-CTI-League/blob/main/cases/${entry.slug}.md`}
+        target="_blank"
+        rel="noopener"
+        class="font-mono text-xs text-text-muted hover:text-accent transition-colors flex items-center gap-1.5"
+      >
+        View source on GitHub
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+
+</Layout>
+
+<style>
+  .prose-cti {
+    @apply font-sans text-sm text-text-secondary leading-relaxed;
+  }
+  .prose-cti p {
+    @apply mb-3;
+  }
+  .prose-cti ul, .prose-cti ol {
+    @apply mb-3 pl-5 space-y-1;
+  }
+  .prose-cti ul {
+    @apply list-disc;
+  }
+  .prose-cti ol {
+    @apply list-decimal;
+  }
+  .prose-cti a {
+    @apply text-accent/70 hover:text-accent underline underline-offset-2 transition-colors break-all;
+  }
+  .prose-cti strong {
+    @apply text-text-primary font-semibold;
+  }
+  .prose-cti code {
+    @apply font-mono text-accent/80 bg-accent/5 px-1 py-0.5 rounded text-xs;
+  }
+  .prose-cti pre {
+    @apply bg-bg-surface border border-border rounded-lg p-4 overflow-x-auto mb-3;
+  }
+  .prose-cti pre code {
+    @apply bg-transparent p-0;
+  }
+</style>

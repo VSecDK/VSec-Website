@@ -1,0 +1,92 @@
+---
+---
+<div
+  class="flex items-center p-0.5 rounded border border-border bg-bg-surface"
+  role="group"
+  aria-label="Select theme"
+>
+  <!-- Light -->
+  <button
+    data-theme-btn="light"
+    title="Light theme"
+    aria-label="Light theme"
+    class="theme-btn w-7 h-7 flex items-center justify-center rounded text-text-muted transition-colors duration-150 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+  >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+
+  <!-- System (follows OS preference) -->
+  <button
+    data-theme-btn="system"
+    title="System theme"
+    aria-label="Follow system preference"
+    class="theme-btn w-7 h-7 flex items-center justify-center rounded text-text-muted transition-colors duration-150 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+  >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+      <line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+  </button>
+
+  <!-- Dark -->
+  <button
+    data-theme-btn="dark"
+    title="Dark theme"
+    aria-label="Dark theme"
+    class="theme-btn w-7 h-7 flex items-center justify-center rounded text-text-muted transition-colors duration-150 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+  >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+</div>
+
+<script is:inline>
+  function getStoredTheme() {
+    try { return localStorage.getItem('vsec-theme') ?? 'system'; } catch { return 'system'; }
+  }
+
+  function applyTheme(theme) {
+    const html = document.documentElement;
+    const resolved = theme === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : theme;
+    html.setAttribute('data-theme', resolved);
+
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      const active = btn.dataset.themeBtn === theme;
+      btn.classList.toggle('text-accent', active);
+      btn.classList.toggle('bg-accent/10', active);
+      btn.classList.toggle('text-text-muted', !active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  // Apply stored theme
+  applyTheme(getStoredTheme());
+
+  // Click handlers
+  document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeBtn;
+      try { localStorage.setItem('vsec-theme', theme); } catch {}
+      applyTheme(theme);
+    });
+  });
+
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getStoredTheme() === 'system') applyTheme('system');
+  });
+</script>
