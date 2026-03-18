@@ -633,6 +633,13 @@ declare module 'astro:content' {
   collection: "events";
   data: InferEntrySchema<"events">
 } & { render(): Render[".md"] };
+"2026-03-12-conference-tech-hub-aarhus-day.md": {
+	id: "2026-03-12-conference-tech-hub-aarhus-day.md";
+  slug: "2026-03-12-conference-tech-hub-aarhus-day";
+  body: string;
+  collection: "events";
+  data: InferEntrySchema<"events">
+} & { render(): Render[".md"] };
 "2026-04-01-conference-cyber-security-dagen-2026.md": {
 	id: "2026-04-01-conference-cyber-security-dagen-2026.md";
   slug: "2026-04-01-conference-cyber-security-dagen-2026";
