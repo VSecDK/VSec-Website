@@ -38,6 +38,17 @@ const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'da'));
       </div>
     </div>
 
+    <!-- Bot under development warning -->
+    <div class="mb-6 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-3">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-yellow-400 flex-shrink-0 mt-0.5" aria-hidden="true">
+        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p class="font-mono text-xs text-yellow-400 leading-relaxed">
+        The Discord verification bot is currently under development. Member profiles and avatars may be incomplete.
+      </p>
+    </div>
+
     <!-- Verification info -->
     <div class="mb-10 p-5 rounded-lg border border-dashed border-accent/20 bg-accent/3 flex items-start gap-4">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-accent flex-shrink-0 mt-0.5">
