@@ -22,10 +22,10 @@ const {
   roles, verified, featured,
 } = Astro.props;
 
-// Avatar priority: discord (bot-filled) → manual → github → initials
+// Avatar priority: discord (bot-filled) → manual → github (local) → initials
 const avatarUrl = discordAvatar
   ?? avatar
-  ?? (github ? `https://github.com/${github}.png?size=80` : null);
+  ?? (github ? `/images/avatars/${github}.png` : null);
 
 const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
