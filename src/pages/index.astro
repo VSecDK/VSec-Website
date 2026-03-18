@@ -202,7 +202,7 @@ const stats = [
 
       <!-- Member data for carousel — type=application/json is not executable, not blocked by CSP -->
       <script is:inline type="application/json" id="members-data" set:html={JSON.stringify(membersJson)} />
-      <script is:inline src="/members-carousel.js" defer></script>
+      <script is:inline src="/members-carousel.js" defer data-cfasync="false"></script>
 
     </div>
   </section>
