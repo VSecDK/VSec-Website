@@ -263,8 +263,8 @@ const stats = [
               <div style="flex-shrink:0">${avatarHtml}</div>
               <div style="flex:1;min-width:0">
                 <div style="margin-bottom:6px">
-                  <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-                    <span class="mc-name">${m.name}</span>
+                  <div style="display:flex;align-items:center;gap:4px;min-width:0">
+                    <span class="mc-name" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${m.name}</span>
                     ${badge}
                   </div>
                   <span class="mc-handle">@${m.handle}</span>
