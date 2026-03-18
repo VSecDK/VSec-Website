@@ -23,11 +23,17 @@ for (const file of files) {
 
 console.log(`Fetching ${githubUsers.length} GitHub avatars...`);
 
+const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 for (const username of githubUsers) {
   const filePath = path.join(AVATARS_DIR, `${username}.png`);
   if (fs.existsSync(filePath)) {
-    console.log(`  skip  ${username} (cached)`);
-    continue;
+    const age = Date.now() - fs.statSync(filePath).mtimeMs;
+    if (age < CACHE_MAX_AGE_MS) {
+      console.log(`  skip  ${username} (cached)`);
+      continue;
+    }
+    console.log(`  refresh ${username} (stale)`);
   }
   try {
     const res = await fetch(`https://github.com/${username}.png?size=200`, {

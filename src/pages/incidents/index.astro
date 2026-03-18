@@ -56,7 +56,7 @@ const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
       <div class="flex-shrink-0 text-right">
         <p class="font-mono font-bold text-3xl text-accent">{cases.length}</p>
         <p class="font-mono text-xs text-text-muted mb-3">incidents</p>
-        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-ghost text-sm">
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
           Suggest an incident
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -73,7 +73,7 @@ const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
       <div class="p-8 rounded-lg border border-dashed border-border text-center">
         <p class="font-mono text-sm text-text-muted mb-4">No incidents found.</p>
         <a href="https://github.com/VSecDK/VSec-CTI-League/tree/main/cases"
-           target="_blank" rel="noopener" class="btn-ghost text-sm">
+           target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
           View directly on GitHub →
         </a>
       </div>
@@ -118,7 +118,7 @@ const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
                         return (
                           <a
                             href={`/incidents/${entry.slug}`}
-                            class="card group flex items-start gap-4 hover:border-accent/20 transition-all duration-200"
+                            class="card group flex items-start gap-4 hover:border-accent/20 transition-colors duration-200"
                             data-search-text={searchText}
                             data-search-tags={searchTags}
                           >

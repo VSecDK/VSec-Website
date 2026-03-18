@@ -71,8 +71,10 @@ const recentCases = allIncidents.slice(0, 4);
 
 let githubProjectCount = 0;
 try {
+  const ghHeaders: Record<string, string> = { 'Accept': 'application/vnd.github+json' };
+  if (import.meta.env.GITHUB_TOKEN) ghHeaders['Authorization'] = `Bearer ${import.meta.env.GITHUB_TOKEN}`;
   const ghRes = await fetch('https://api.github.com/orgs/VSecDK/repos?per_page=100&type=public', {
-    headers: { 'Accept': 'application/vnd.github+json' }
+    headers: ghHeaders,
   });
   if (ghRes.ok) {
     const ghData = await ghRes.json() as { visibility: string; archived: boolean }[];
@@ -120,7 +122,7 @@ const stats = [
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener" class="btn-ghost">
+        <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener noreferrer" class="btn-ghost">
           Join on Discord
         </a>
       </div>
@@ -249,7 +251,7 @@ const stats = [
 
           const socialsHtml = socials.length
             ? `<div class="mc-socials">
-                ${socials.map(s => `<a href="${s.href}" target="_blank" rel="noopener" class="mc-social">${s.icon}</a>`).join('')}
+                ${socials.map(s => `<a href="${s.href}" target="_blank" rel="noopener noreferrer" class="mc-social">${s.icon}</a>`).join('')}
                </div>`
             : '';
 
@@ -355,7 +357,7 @@ const stats = [
               <a
                 href={event.data.link}
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 class="btn-ghost text-xs flex-shrink-0"
               >
                 Register
@@ -387,7 +389,7 @@ const stats = [
           return (
             <a
               href={`/incidents/${entry.slug}`}
-              class="card group flex items-start gap-4 hover:border-accent/20 transition-all duration-200"
+              class="card group flex items-start gap-4 hover:border-accent/20 transition-colors duration-200"
             >
               <div class="flex-shrink-0 font-mono text-xs text-text-muted pt-0.5 w-24">
                 {entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -431,7 +433,7 @@ const stats = [
           <a
             href={c.data.link}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class="card group flex items-start gap-4"
           >
             <!-- Logo / fallback (index) -->
@@ -442,6 +444,8 @@ const stats = [
                   alt={c.data.name}
                   width="24"
                   height="24"
+                  loading="lazy"
+                  decoding="async"
                   class="w-6 h-6 object-contain"
                   onerror="this.style.display='none';this.nextSibling.style.display='flex'"
                 />
@@ -512,14 +516,14 @@ const stats = [
             <a
               href={s.data.website}
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
               class:list={[
-                'flex flex-col items-center gap-3 px-8 py-5 rounded-lg border transition-all duration-300',
+                'flex flex-col items-center gap-3 px-8 py-5 rounded-lg border transition-colors duration-300',
                 tierStyle[s.data.tier],
               ]}
             >
               {s.data.logo ? (
-                <img src={s.data.logo} alt={s.data.name} class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                <img src={s.data.logo} alt={s.data.name} width="160" height="32" loading="lazy" decoding="async" class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity" />
               ) : (
                 <span class="font-mono font-semibold text-text-primary">{s.data.name}</span>
               )}

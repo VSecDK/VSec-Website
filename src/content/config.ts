@@ -20,7 +20,7 @@ const events = defineCollection({
     date: z.coerce.date(),
     location: z.string(),
     type: z.enum(['meetup', 'ctf', 'workshop', 'conference']),
-    link: z.string().optional(),
+    link: z.string().url().optional(),
   }),
 });
 

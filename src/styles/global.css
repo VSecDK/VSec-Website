@@ -154,6 +154,9 @@
     @apply w-1.5 h-1.5 rounded-full border-0 cursor-pointer bg-text-muted/40;
     transition: background 0.3s, transform 0.3s;
   }
+  .mc-dot:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-accent/60 rounded-full;
+  }
 
   .mc-dot[aria-pressed="true"] { @apply bg-accent scale-[1.4]; }
 }

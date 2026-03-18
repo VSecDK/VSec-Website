@@ -31,7 +31,7 @@ const current = Astro.url.pathname;
           <a
             href={link.href}
             class:list={[
-              'font-mono text-sm px-3 py-1.5 rounded transition-all duration-200',
+              'font-mono text-sm px-3 py-1.5 rounded transition-colors duration-200',
               current.startsWith(link.href)
                 ? 'text-accent bg-accent/8'
                 : 'text-text-secondary hover:text-text-primary hover:bg-white/4',
@@ -48,7 +48,7 @@ const current = Astro.url.pathname;
       <a
         href="https://discord.com/invite/XCUja4Q"
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         class="btn-primary text-xs py-2 px-4"
       >
         Discord
@@ -65,9 +65,9 @@ const current = Astro.url.pathname;
         aria-controls="nav-mobile"
         class="md:hidden flex flex-col justify-center items-center w-9 h-9 rounded border border-border bg-bg-surface hover:border-accent/30 transition-colors duration-200"
       >
-        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 origin-center"></span>
-        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 mt-1.5"></span>
-        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-all duration-200 mt-1.5"></span>
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-[transform,opacity] duration-200 origin-center"></span>
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-[transform,opacity] duration-200 mt-1.5"></span>
+        <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-[transform,opacity] duration-200 mt-1.5"></span>
       </button>
     </div>
 
@@ -86,7 +86,7 @@ const current = Astro.url.pathname;
           <a
             href={link.href}
             class:list={[
-              'font-mono text-sm px-3 py-2.5 rounded flex items-center transition-all duration-200',
+              'font-mono text-sm px-3 py-2.5 rounded flex items-center transition-colors duration-200',
               current.startsWith(link.href)
                 ? 'text-accent bg-accent/8'
                 : 'text-text-secondary hover:text-text-primary hover:bg-white/4',

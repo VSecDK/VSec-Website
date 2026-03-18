@@ -33,7 +33,7 @@ const sortedGroups = order
       <div class="flex-shrink-0 text-right">
         <p class="font-mono font-bold text-3xl text-accent">{all.length}</p>
         <p class="font-mono text-xs text-text-muted mb-3">communities</p>
-        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-ghost text-sm">
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
           Suggest a community
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -55,7 +55,7 @@ const sortedGroups = order
               <a
                 href={c.data.link}
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 class="card group flex items-start gap-4"
               >
                 <!-- Logo / fallback -->
@@ -67,6 +67,8 @@ const sortedGroups = order
                         alt={c.data.name}
                         width="24"
                         height="24"
+                        loading="lazy"
+                        decoding="async"
                         class="w-6 h-6 object-contain"
                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
                       />
@@ -114,7 +116,7 @@ const sortedGroups = order
       <p class="font-sans text-xs text-text-muted mb-5">
         Create a new markdown file in <code class="font-mono text-accent/70">src/content/communities/</code> and open a pull request.
       </p>
-      <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-primary text-sm">
+      <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">
         Contribute on GitHub
       </a>
     </div>

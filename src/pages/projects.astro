@@ -75,7 +75,7 @@ const statusStyle: Record<string, string> = {
         <h1 class="font-mono font-bold text-4xl text-text-primary mb-2">Projects</h1>
         <p class="font-sans text-text-secondary">
           All public repositories from
-          <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="text-accent/70 hover:text-accent transition-colors">github.com/VSecDK</a>.
+          <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">github.com/VSecDK</a>.
           Repos with no activity for over a year are marked as inactive.
         </p>
       </div>
@@ -100,7 +100,7 @@ const statusStyle: Record<string, string> = {
     {fetchError ? (
       <div class="p-8 rounded-lg border border-dashed border-border text-center">
         <p class="font-mono text-sm text-text-muted mb-2">Could not fetch repos from GitHub.</p>
-        <a href="https://github.com/VSecDK" target="_blank" rel="noopener" class="btn-ghost text-sm">
+        <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
           Se direkte på GitHub →
         </a>
       </div>
@@ -116,7 +116,7 @@ const statusStyle: Record<string, string> = {
             <a
               href={repo.html_url}
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
               class="card group flex flex-col gap-3"
             >
               <!-- Name + status -->
