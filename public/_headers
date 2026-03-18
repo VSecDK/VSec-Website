@@ -20,16 +20,14 @@
   # Restrict cross-origin resource reads
   Cross-Origin-Resource-Policy: same-origin
 
-  # Disable Cloudflare Rocket Loader and other HTML-level transformations.
-  # Rocket Loader injects inline scripts/styles that violate the CSP below.
-  Cache-Control: no-transform
-
   # Content Security Policy
-  # - script-src: own files + Cloudflare Web Analytics beacon
-  # - style-src: Google Fonts stylesheet; Tailwind compiles to external CSS
-  # - img-src: GitHub avatars and Discord CDN for member/community images
-  # - connect-src: Cloudflare Web Analytics reporting endpoint
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://avatars.githubusercontent.com https://github.com https://cdn.discordapp.com; connect-src 'self' https://cloudflareinsights.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';
+  # Cloudflare service domains per https://developers.cloudflare.com/fundamentals/reference/policies-compliances/content-security-policies/
+  # - Rocket Loader:    ajax.cloudflare.com + unsafe-inline (script)
+  # - Scrape Shield:    unsafe-inline (script)
+  # - Web Analytics:    static.cloudflareinsights.com (script) + cloudflareinsights.com (connect)
+  # - style-src:        Google Fonts + unsafe-inline for Rocket Loader style injections
+  # - img-src:          GitHub avatars and Discord CDN for member/community images
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' ajax.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://avatars.githubusercontent.com https://github.com https://cdn.discordapp.com; connect-src 'self' https://cloudflareinsights.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';
 
 # Long-term cache for hashed Astro assets (fingerprinted filenames)
 /_astro/*
