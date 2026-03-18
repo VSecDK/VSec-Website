@@ -220,10 +220,9 @@ const stats = [
 
         function buildCard(m) {
           const avatarHtml = m.avatarUrl
-            ? `<div class="mc-avatar" style="padding:0;overflow:hidden">
-                 <img src="${m.avatarUrl}" alt="${m.name}"
-                      style="width:100%;height:100%;object-fit:cover;display:block"
-                      onerror="this.parentNode.style.padding='';this.parentNode.textContent='${m.initials}'">
+            ? `<div class="mc-avatar">
+                 <img src="${m.avatarUrl}" alt="${m.name}" class="mc-avatar-img"
+                      onerror="this.parentNode.textContent='${m.initials}'">
                </div>`
             : `<div class="mc-avatar">${m.initials}</div>`;
 
@@ -249,7 +248,7 @@ const stats = [
           ].filter(Boolean);
 
           const socialsHtml = socials.length
-            ? `<div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+            ? `<div class="mc-socials">
                 ${socials.map(s => `<a href="${s.href}" target="_blank" rel="noopener" class="mc-social">${s.icon}</a>`).join('')}
                </div>`
             : '';
@@ -260,16 +259,16 @@ const stats = [
 
           return `
             <div class="mc-card">
-              <div style="flex-shrink:0">${avatarHtml}</div>
-              <div style="flex:1;min-width:0">
-                <div style="margin-bottom:6px">
-                  <div style="display:flex;align-items:center;gap:4px;min-width:0">
-                    <span class="mc-name" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${m.name}</span>
+              <div class="mc-avatar-wrap">${avatarHtml}</div>
+              <div class="mc-body">
+                <div class="mc-header">
+                  <div class="mc-name-row">
+                    <span class="mc-name">${m.name}</span>
                     ${badge}
                   </div>
                   <span class="mc-handle">@${m.handle}</span>
                 </div>
-                ${roles ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${roles}</div>` : ''}
+                ${roles ? `<div class="mc-roles">${roles}</div>` : ''}
                 ${bio}
                 ${socialsHtml}
               </div>
@@ -302,10 +301,10 @@ const stats = [
         function goTo(page) {
           current = page;
           grid.setAttribute('aria-busy', 'true');
-          grid.style.opacity = '0';
+          grid.classList.add('opacity-0');
           setTimeout(() => {
             render();
-            grid.style.opacity = '1';
+            grid.classList.remove('opacity-0');
             grid.setAttribute('aria-busy', 'false');
           }, 300);
         }
