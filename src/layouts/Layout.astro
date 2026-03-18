@@ -27,22 +27,13 @@ const fullTitle = `${title} | VSec`;
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <!-- Anti-FOUC: set theme before first render -->
-    <script is:inline>
-      (function () {
-        try {
-          const t = localStorage.getItem('vsec-theme') ?? 'system';
-          const resolved = t === 'system'
-            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-            : t;
-          document.documentElement.setAttribute('data-theme', resolved);
-        } catch {}
-      })();
-    </script>
+    <!-- Anti-FOUC: set theme before first render (external to avoid CSP unsafe-inline) -->
+    <script is:inline src="/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title="VSec — Posts" href="/rss/posts.xml" />
     <link rel="alternate" type="application/rss+xml" title="VSec — Incidents" href="/rss/incidents.xml" />
     <link rel="alternate" type="application/rss+xml" title="VSec — Events" href="/rss/events.xml" />
@@ -70,6 +61,7 @@ const fullTitle = `${title} | VSec`;
     <meta name="twitter:image" content={ogImageUrl} />
 
     <title>{fullTitle}</title>
+    <script is:inline src="/avatar-fallback.js" defer></script>
   </head>
   <body class="min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-bg-base focus:text-accent focus:font-mono focus:text-sm focus:rounded focus:border focus:border-accent/40">

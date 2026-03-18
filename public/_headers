@@ -1,9 +1,30 @@
 /*
+  # Prevent MIME-type sniffing
   X-Content-Type-Options: nosniff
+
+  # Deny framing entirely
   X-Frame-Options: DENY
+
+  # Referrer policy
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  X-XSS-Protection: 1; mode=block
+
+  # Restrict browser features
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=()
+
+  # Enforce HTTPS for 1 year, include subdomains
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Prevent cross-origin info leaks via window.opener
+  Cross-Origin-Opener-Policy: same-origin
+
+  # Restrict cross-origin resource reads
+  Cross-Origin-Resource-Policy: same-origin
+
+  # Content Security Policy
+  # - script-src: 'unsafe-inline' required for Astro's anti-FOUC inline script
+  # - style-src: 'unsafe-inline' required for Tailwind + Google Fonts stylesheet
+  # - img-src: GitHub avatars and Discord CDN for member/community images
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://avatars.githubusercontent.com https://github.com https://cdn.discordapp.com; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';
 
 # Long-term cache for hashed Astro assets (fingerprinted filenames)
 /_astro/*
@@ -16,3 +37,12 @@
 # Fonts and favicons
 /favicon.svg
   Cache-Control: public, max-age=86400
+
+/site.webmanifest
+  Cache-Control: public, max-age=86400
+
+/icon-192.png
+  Cache-Control: public, max-age=604800
+
+/icon-512.png
+  Cache-Control: public, max-age=604800
