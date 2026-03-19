@@ -43,7 +43,7 @@ members.forEach(m => {
         const searchTags = [...post.data.tags.map(t => t.toLowerCase()), ...authorRoles].join(',');
         return (
           <a
-            href={`/posts/${post.slug}`}
+            href={`/posts/${post.id}`}
             class="card group flex flex-col gap-4"
             data-search-text={searchText}
             data-search-tags={searchTags}

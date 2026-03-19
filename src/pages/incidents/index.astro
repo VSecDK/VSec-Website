@@ -117,7 +117,7 @@ const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
                         ].join(',');
                         return (
                           <a
-                            href={`/incidents/${entry.slug}`}
+                            href={`/incidents/${entry.id}`}
                             class="card group flex items-start gap-4 hover:border-accent/20 transition-colors duration-200"
                             data-search-text={searchText}
                             data-search-tags={searchTags}

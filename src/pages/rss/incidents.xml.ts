@@ -19,7 +19,7 @@ export async function GET(context: APIContext) {
         `Type: ${incident.data.type}`,
       ].filter(Boolean).join(' · '),
       pubDate: incident.data.date,
-      link: `/incidents/${incident.slug}/`,
+      link: `/incidents/${incident.id}/`,
     })),
     customData: `<language>en-gb</language>`,
   });

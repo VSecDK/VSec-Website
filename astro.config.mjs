@@ -1,9 +1,11 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://vsec.dk',
-  integrations: [tailwind({ applyBaseStyles: false })],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   image: {
     domains: [
       'avatars.githubusercontent.com',

@@ -1,17 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
   return posts.map(post => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 ---
 
 <Layout title={post.data.title} description={post.data.description}>
@@ -30,7 +30,7 @@ const { Content } = await post.render();
     <!-- Header -->
     <header class="mb-12 pb-8 border-b border-border">
       <div class="flex flex-wrap gap-2 mb-4">
-        {post.data.tags.map(tag => (
+        {post.data.tags.map((tag: string) => (
           <span class="tag">{tag}</span>
         ))}
       </div>

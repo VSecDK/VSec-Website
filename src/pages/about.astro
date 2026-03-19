@@ -7,13 +7,13 @@ import Icon from '../components/Icon.astro';
 const allMembers = await getCollection('members');
 const founder = allMembers
   .filter(m => m.data.roles.some(r => r.toLowerCase() === 'administrator'))
-  .sort((a, b) => a.slug.localeCompare(b.slug))[0];
+  .sort((a, b) => a.id.localeCompare(b.id))[0];
 const founderAvatarUrl = founder ? resolveAvatar({ discordAvatar: founder.data.discordAvatar, avatar: founder.data.avatar, github: founder.data.github }) : null;
 const founderInitials = founder ? getInitials(founder.data.name) : '';
 
 const moderators = allMembers
   .filter(m => m.data.roles.some(r => r.toLowerCase() === 'moderator') && !m.data.roles.some(r => r.toLowerCase() === 'administrator'))
-  .sort((a, b) => a.slug.localeCompare(b.slug))
+  .sort((a, b) => a.id.localeCompare(b.id))
   .map(m => ({
     name:      m.data.name,
     handle:    m.data.handle,

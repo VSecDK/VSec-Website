@@ -1,9 +1,11 @@
 dist/
+.astro/
 node_modules/
 .env
 .env.*
 !.env.example
 .DS_Store
+*.code-workspace
 .claude
 screenshot.mjs
 serve.mjs

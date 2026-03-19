@@ -30,7 +30,7 @@ function stripLinks(s: string): string {
 
 export async function getStaticPaths() {
   const entries = await getCollection('incidents');
-  return entries.map(entry => ({ params: { slug: entry.slug }, props: { entry } }));
+  return entries.map(entry => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
@@ -46,12 +46,13 @@ function extractSection(content: string, heading: string): string {
   return match[0].replace(/^##\s+.+\n?/, '').trim();
 }
 
-const description  = extractSection(entry.body, 'Description');
-const timeline     = extractSection(entry.body, 'Timeline');
-const advisor      = extractSection(entry.body, 'Security advisor');
-const indicators   = extractSection(entry.body, 'Indicators of Compromise');
-const detection    = extractSection(entry.body, 'Detection Rules');
-const references   = extractSection(entry.body, 'References');
+const body         = entry.body ?? '';
+const description  = extractSection(body, 'Description');
+const timeline     = extractSection(body, 'Timeline');
+const advisor      = extractSection(body, 'Security advisor');
+const indicators   = extractSection(body, 'Indicators of Compromise');
+const detection    = extractSection(body, 'Detection Rules');
+const references   = extractSection(body, 'References');
 
 // Strip dangerous HTML constructs after marked parsing (XSS protection)
 function sanitizeHtml(html: string): string {
@@ -201,7 +202,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
         ← All incidents
       </a>
       <a
-        href={`https://github.com/VSecDK/VSec-CTI-League/blob/main/cases/${entry.slug}.md`}
+        href={`https://github.com/VSecDK/VSec-CTI-League/blob/main/cases/${entry.id}.md`}
         target="_blank"
         rel="noopener noreferrer"
         class="font-mono text-xs text-text-muted hover:text-accent transition-colors flex items-center gap-1.5"
@@ -218,6 +219,8 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
 </Layout>
 
 <style>
+  @reference "../../styles/global.css";
+
   .prose-cti {
     @apply font-sans text-sm text-text-secondary leading-relaxed;
   }

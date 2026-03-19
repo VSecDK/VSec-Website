@@ -1,34 +1,55 @@
 /* Fonts loaded via <link> in Layout.astro */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* ─── Theme tokens ───────────────────────────────────────────────────────── */
 :root {
-  --bg-base:         8 12 16;
-  --bg-surface:      15 20 25;
-  --bg-elevated:     22 29 38;
-  --accent:          0 229 160;
-  --text-primary:    232 237 242;
-  --text-secondary:  122 138 153;
-  --text-muted:      74 90 105;
+  --bg-base:         rgb(8 12 16);
+  --bg-surface:      rgb(15 20 25);
+  --bg-elevated:     rgb(22 29 38);
+  --accent:          rgb(0 229 160);
+  --text-primary:    rgb(232 237 242);
+  --text-secondary:  rgb(122 138 153);
+  --text-muted:      rgb(74 90 105);
   --border-color:    rgba(255, 255, 255, 0.07);
   --grid-line:       rgba(0, 229, 160, 0.03);
   --scrollbar-track: #080c10;
 }
 
 [data-theme="light"] {
-  --bg-base:         248 250 252;
-  --bg-surface:      241 245 249;
-  --bg-elevated:     226 232 240;
-  --accent:          0 140 100;
-  --text-primary:    15 23 42;
-  --text-secondary:  71 85 105;
-  --text-muted:      148 163 184;
+  --bg-base:         rgb(248 250 252);
+  --bg-surface:      rgb(241 245 249);
+  --bg-elevated:     rgb(226 232 240);
+  --accent:          rgb(0 140 100);
+  --text-primary:    rgb(15 23 42);
+  --text-secondary:  rgb(71 85 105);
+  --text-muted:      rgb(148 163 184);
   --border-color:    rgba(0, 0, 0, 0.09);
   --grid-line:       rgba(0, 140, 100, 0.05);
   --scrollbar-track: #f8fafc;
+}
+
+@theme inline {
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "IBM Plex Sans", sans-serif;
+
+  --color-bg-base:          var(--bg-base);
+  --color-bg-surface:       var(--bg-surface);
+  --color-bg-elevated:      var(--bg-elevated);
+  --color-accent:           var(--accent);
+  --color-border:           var(--border-color);
+  --color-text-primary:     var(--text-primary);
+  --color-text-secondary:   var(--text-secondary);
+  --color-text-muted:       var(--text-muted);
+
+  --background-image-grid-pattern:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+}
+
+@utility bg-grid {
+  background-size: 40px 40px;
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────── */

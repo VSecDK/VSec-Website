@@ -29,13 +29,13 @@ const events = (await getCollection('events'))
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
   .slice(0, 2);
 
-const tierOrder = { guld: 0, sølv: 1, bronze: 2 } as const;
+const tierOrder = { gold: 0, silver: 1, bronze: 2 } as const;
 const tierStyle = {
-  guld:   'border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50',
-  sølv:   'border-slate-400/30 bg-slate-400/5 hover:border-slate-400/50',
+  gold:   'border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50',
+  silver: 'border-slate-400/30 bg-slate-400/5 hover:border-slate-400/50',
   bronze: 'border-orange-700/30 bg-orange-700/5 hover:border-orange-700/50',
 } as const;
-const tierLabel = { guld: '★ Gold', sølv: '★ Silver', bronze: '★ Bronze' } as const;
+const tierLabel = { gold: '★ Gold', silver: '★ Silver', bronze: '★ Bronze' } as const;
 
 const sponsors = (await getCollection('sponsors'))
   .sort((a, b) => tierOrder[a.data.tier] - tierOrder[b.data.tier]);
@@ -153,7 +153,7 @@ const stats = [
 
     <div class="grid md:grid-cols-3 gap-5">
       {posts.map(post => (
-        <a href={`/posts/${post.slug}`} class="card group flex flex-col gap-4">
+        <a href={`/posts/${post.id}`} class="card group flex flex-col gap-4">
           <div class="flex flex-wrap gap-2">
             {post.data.tags.slice(0, 2).map(tag => (
               <span class="tag">{tag}</span>
@@ -389,7 +389,7 @@ const stats = [
           const tc = getTypeConfig(entry.data.type);
           return (
             <a
-              href={`/incidents/${entry.slug}`}
+              href={`/incidents/${entry.id}`}
               class="card group flex items-start gap-4 hover:border-accent/20 transition-colors duration-200"
             >
               <div class="flex-shrink-0 font-mono text-xs text-text-muted pt-0.5 w-24">
