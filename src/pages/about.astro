@@ -10,6 +10,13 @@ const founder = allMembers
   .sort((a, b) => a.id.localeCompare(b.id))[0];
 const founderAvatarUrl = founder ? resolveAvatar({ discordAvatar: founder.data.discordAvatar, avatar: founder.data.avatar, github: founder.data.github }) : null;
 const founderInitials = founder ? getInitials(founder.data.name) : '';
+const founderSocials = founder ? [
+  founder.data.github   && { href: `https://github.com/${founder.data.github}`,                                                                    label: 'GitHub'   },
+  founder.data.twitter  && { href: `https://twitter.com/${founder.data.twitter}`,                                                                   label: 'Twitter'  },
+  founder.data.linkedin && { href: `https://linkedin.com/in/${founder.data.linkedin}`,                                                              label: 'LinkedIn' },
+  founder.data.website  && { href: founder.data.website.startsWith('http') ? founder.data.website : `https://${founder.data.website}`,              label: 'Website'  },
+  founder.data.ctftime  && { href: founder.data.ctftime.startsWith('http') ? founder.data.ctftime : `https://ctftime.org/user/${founder.data.ctftime}`, label: 'CTFtime' },
+].filter(Boolean) as { href: string; label: string }[] : [];
 
 const moderators = allMembers
   .filter(m => m.data.roles.some(r => r.toLowerCase() === 'moderator') && !m.data.roles.some(r => r.toLowerCase() === 'administrator'))
@@ -50,14 +57,14 @@ const moderators = allMembers
         </blockquote>
 
         <p>
-          All local community crew members have the possibility to be part of the community board
-          channel and directly influence how the community is run — including the code of conduct,
-          guidelines, rules, and events. Each sub-community manages its own channels on the server.
-        </p>
-        <p>
           We are a community of professionals, students, and enthusiasts who share a passion
           for information security. Through meetups, CTF competitions, and open
           projects we create space for learning and networking across experience levels and backgrounds.
+        </p>
+        <p>
+          All local community crew members have the possibility to be part of the community board
+          channel and directly influence how the community is run — including the code of conduct,
+          guidelines, rules, and events. Each sub-community manages its own channels on the server.
         </p>
       </div>
 
@@ -74,6 +81,20 @@ const moderators = allMembers
             )}
             <p class="font-mono font-semibold text-text-primary text-sm">{founder.data.name}</p>
             <p class="font-mono text-xs text-text-muted">Founder & Administrator</p>
+            {founderSocials.length > 0 && (
+              <div class="flex items-center justify-center gap-3 mt-3">
+                {founderSocials.map(s => (
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={`${founder.data.name} on ${s.label}`}
+                    class="text-text-muted hover:text-accent transition-colors duration-200">
+                    {s.label === 'GitHub'   && <Icon name="github"   size={14} />}
+                    {s.label === 'Twitter'  && <Icon name="twitter"  size={13} />}
+                    {s.label === 'LinkedIn' && <Icon name="linkedin" size={14} />}
+                    {s.label === 'Website'  && <Icon name="website"  size={14} />}
+                    {s.label === 'CTFtime'  && <Icon name="ctftime"  size={13} />}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

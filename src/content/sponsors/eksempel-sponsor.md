@@ -1,5 +1,5 @@
 ---
 name: "Your company here"
-website: "https://example.com"
+website: "mailto:info@vsec.dk"
 tier: "gold"
 ---
