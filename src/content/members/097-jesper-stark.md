@@ -1,7 +1,7 @@
 ---
 name: Jesper Stark
 handle: jesperstark
-bio: "Compliance Engineer @ Cryptomathic"
+bio: "Concierge Security Engineer @ Arctic Wolf"
 roles: ["Verified"]
 verified: true
 featured: false
