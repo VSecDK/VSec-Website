@@ -2,7 +2,7 @@
 
 The official website for **VSec** — a Danish non-profit information security community for professionals and enthusiasts.
 
-> Vi bygger sikkerhed sammen.
+> Building security together.
 
 **Live:** [vsec.dk](https://vsec.dk) · **Discord:** [discord.gg/vsec](https://discord.gg/vsec)
 
@@ -12,8 +12,8 @@ The official website for **VSec** — a Danish non-profit information security c
 
 | Layer | Technology |
 |---|---|
-| Framework | [Astro](https://astro.build) v4 (static output) |
-| Styling | [Tailwind CSS](https://tailwindcss.com) v3 with custom design tokens |
+| Framework | [Astro](https://astro.build) v6 (static output) |
+| Styling | [Tailwind CSS](https://tailwindcss.com) v4 with custom design tokens |
 | Content | Astro Content Collections (Markdown + Zod schemas) |
 | Hosting | Cloudflare Pages (auto-deploy on push to `main`) |
 | Fonts | IBM Plex Mono + IBM Plex Sans |
@@ -53,7 +53,7 @@ public/                # Static assets (images, favicons)
 | `projects` | Active and past community projects | status, github |
 | `members` | Verified VSec members | handle, roles, verified, discord/github |
 | `communities` | External security communities | link, tags, featured |
-| `sponsors` | Financial supporters | tier (guld/sølv/bronze), website |
+| `sponsors` | Financial supporters | tier (gold/silver/bronze), website |
 | `learning` | Curated learning resources | category, link, featured |
 | `incidents` | Danish cybersecurity incidents from [VSec CTI League](https://github.com/VSecDK/VSec-CTI-League) | company, sector, actor, date, type |
 
@@ -109,7 +109,7 @@ Create `src/content/events/YYYY-MM-DD-event-name.md`:
 title: "VSec Meetup #12"
 description: "Monthly meetup in Copenhagen."
 date: 2026-04-01
-location: "København"
+location: "Copenhagen"
 type: meetup        # meetup | ctf | workshop | conference
 link: "https://..."
 ---
