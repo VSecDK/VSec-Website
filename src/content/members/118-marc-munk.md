@@ -1,7 +1,7 @@
 ---
 name: Marc Munk
 handle: marmun
-bio: Cyber security specialist
+bio: Concierge Security level 2
 roles: ["Verified"]
 verified: true
 featured: false
