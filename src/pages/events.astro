@@ -48,7 +48,7 @@ const typeLabel: Record<string, string> = {
 
     <div id="events-list">
       {upcoming.length > 0 && (
-        <section class="mb-16" data-search-section>
+        <section id="upcoming-events" class="mb-16" data-search-section>
           <h2 class="font-mono text-xs text-text-muted tracking-widest uppercase mb-6 flex items-center gap-3">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent"></span>
             Upcoming
@@ -57,6 +57,7 @@ const typeLabel: Record<string, string> = {
             {upcoming.map(event => (
               <div
                 class="card flex flex-col md:flex-row md:items-center gap-6"
+                data-event-date={event.data.date.toISOString().slice(0, 10)}
                 data-search-text={`${event.data.title} ${event.data.description} ${event.data.location} ${event.data.type}`.toLowerCase()}
                 data-search-tags={event.data.type}
               >
@@ -123,3 +124,41 @@ const typeLabel: Record<string, string> = {
   </div>
 
 </Layout>
+
+<script>
+  const upcomingSection = document.getElementById('upcoming-events');
+  const upcomingCount = document.querySelector('.text-accent') as HTMLElement | null;
+
+  if (upcomingSection) {
+    const updateUpcomingEvents = () => {
+      const now = new Date();
+      const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+        .map(value => String(value).padStart(2, '0'))
+        .join('-');
+      const events = upcomingSection.querySelectorAll<HTMLElement>('[data-event-date]');
+      let visibleCount = 0;
+
+      events.forEach(event => {
+        const isUpcoming = (event.dataset.eventDate || '') >= today;
+        event.hidden = !isUpcoming;
+        if (isUpcoming) visibleCount++;
+      });
+
+      upcomingSection.hidden = visibleCount === 0;
+      if (upcomingCount) upcomingCount.textContent = String(visibleCount);
+    };
+
+    updateUpcomingEvents();
+
+    const scheduleNextUpdate = () => {
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 0, 0);
+      window.setTimeout(() => {
+        updateUpcomingEvents();
+        scheduleNextUpdate();
+      }, nextMidnight.getTime() - Date.now());
+    };
+
+    scheduleNextUpdate();
+  }
+</script>
