@@ -34,7 +34,7 @@ const typeLabel: Record<string, string> = {
       </div>
       <div class="flex gap-6 flex-shrink-0 sm:text-right">
         <div>
-          <p class="font-mono font-bold text-3xl text-accent">{upcoming.length}</p>
+          <p id="upcoming-count" class="font-mono font-bold text-3xl text-accent">{upcoming.length}</p>
           <p class="font-mono text-xs text-text-muted">upcoming</p>
         </div>
         <div>
@@ -127,7 +127,7 @@ const typeLabel: Record<string, string> = {
 
 <script>
   const upcomingSection = document.getElementById('upcoming-events');
-  const upcomingCount = document.querySelector('.text-accent') as HTMLElement | null;
+  const upcomingCount = document.getElementById('upcoming-count');
 
   if (upcomingSection) {
     const updateUpcomingEvents = () => {
