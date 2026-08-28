@@ -4,6 +4,6 @@ description: The go-to tracker for CTF competitions worldwide. Find upcoming eve
 link: https://ctftime.org
 logo: /images/logos/ctftime.org.ico
 tags: [ctf, competitions, writeups, rankings, calendar]
-category: CTF Platforms
+category: CTF
 featured: false
 ---

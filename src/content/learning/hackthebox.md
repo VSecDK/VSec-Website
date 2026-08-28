@@ -4,6 +4,6 @@ description: Advanced pentesting platform with machines, challenges and a struct
 link: https://www.hackthebox.com
 logo: /images/logos/hackthebox.com.ico
 tags: [advanced, ctf, pentesting, red-team, academy]
-category: CTF Platforms
+category: Hands-on Platforms
 featured: true
 ---

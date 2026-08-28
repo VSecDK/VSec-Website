@@ -4,6 +4,6 @@ description: The world's most recognised penetration testing course from Offensi
 link: https://www.offsec.com/courses/pen-200/
 logo: /images/logos/offsec.com.svg
 tags: [pentest, oscp, certification, hands-on]
-category: Offensive Security
+category: Hands-on Platforms
 featured: false
 ---

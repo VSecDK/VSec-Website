@@ -4,6 +4,6 @@ description: Open source project with guidelines, documentation and resources on
 link: https://owasp.org
 logo: /images/logos/owasp.org.png
 tags: [documentation, web, standards, free, top-10]
-category: Documentation
+category: Standards & Documentation
 featured: true
 ---
