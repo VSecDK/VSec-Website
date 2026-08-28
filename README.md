@@ -57,6 +57,8 @@ public/                # Static assets (images, favicons)
 | `learning` | Curated learning resources | category, link, featured |
 | `incidents` | Danish cybersecurity incidents | company, sector, actor, date, type |
 
+Incident `type` values currently in use: `ransomware`, `ddos`, `dataleak`, `hacking`, `supply-chain`, `ics`, `unknown`.
+
 ---
 
 ## Getting started

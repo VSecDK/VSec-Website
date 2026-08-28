@@ -2,7 +2,7 @@
 company: Vestas A/S
 sector: Energy / Manufacturing
 actor: LockBit 2.0
-date: 2021-11-19
+date: 2021-11-20
 type: ransomware
 ---
 
@@ -14,7 +14,8 @@ Vestas initially described the incident only as a "cyber security incident" with
 
 ## Timeline
 
-- 2021-11-19: Initial disclosure — Vestas reports "cyber security incident"
+- 2021-11-19: Vestas detects the incident
+- 2021-11-20: Company announcement — Vestas reports a "cyber security incident"
 - 2021-11-22: Vestas shares drop 2.5%, ~5.8 billion DKK in lost market value
 - 2021-11-28: Ransomware confirmed; data stated to be compromised
 - 2021-12-06: LockBit 2.0 attributed as the threat actor
