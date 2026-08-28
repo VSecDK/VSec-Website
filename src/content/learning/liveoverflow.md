@@ -4,4 +4,5 @@ description: YouTube channel and blog with in-depth videos on CTF solutions, rev
 link: https://liveoverflow.com
 tags: [videos, ctf, reverse-engineering, youtube, bug-bounty]
 category: Videos & Blogs
+featured: false
 ---

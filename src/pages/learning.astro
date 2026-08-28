@@ -15,7 +15,7 @@ const grouped = all.reduce<Record<string, typeof all>>((acc, c) => {
   return acc;
 }, {});
 
-const order = ['CTF Platforms', 'Online Training Platforms', 'Application Security', 'Offensive Security', 'Governance, Risk and Compliance', 'Documentation', 'Videos & Blogs', 'Security Podcasts', 'Other'];
+const order = ['Hands-on Platforms', 'Application Security', 'Offensive Security', 'Defence & Threat Intelligence', 'Standards & Documentation', 'Governance, Risk and Compliance', 'CTF', 'Videos & Blogs', 'Security Podcasts', 'Other'];
 const sortedGroups = order
   .filter(k => grouped[k])
   .map(k => ({ label: k, items: grouped[k] }));
