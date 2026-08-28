@@ -84,7 +84,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
 
 <Layout title={`${entry.data.company} – ${tc.label} | Incidents`} description={`${tc.label} incident: ${entry.data.company}. ${description.slice(0, 120)}`}>
 
-  <div class="max-w-3xl mx-auto px-6 py-16">
+  <div class="max-w-6xl mx-auto px-6 py-16">
 
     <!-- Back link -->
     <a href="/incidents" class="inline-flex items-center gap-2 font-mono text-xs text-text-muted hover:text-accent transition-colors mb-10">
@@ -140,7 +140,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
             <span class="text-accent/60 text-sm">##</span>
             Description
           </h2>
-          <div class="prose-cti" set:html={md(description)} />
+          <div class="prose-cti max-w-3xl" set:html={md(description)} />
         </section>
       )}
 
@@ -160,7 +160,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
             <span class="text-accent/60 text-sm">##</span>
             Security Advisory
           </h2>
-          <div class="prose-cti" set:html={md(advisor)} />
+          <div class="prose-cti max-w-3xl" set:html={md(advisor)} />
         </section>
       )}
 
@@ -190,7 +190,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
             <span class="text-accent/60 text-sm">##</span>
             References
           </h2>
-          <div class="prose-cti" set:html={renderReferences(references)} />
+          <div class="prose-cti max-w-3xl" set:html={renderReferences(references)} />
         </section>
       )}
 

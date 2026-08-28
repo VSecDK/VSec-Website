@@ -16,7 +16,7 @@ const { Content } = await render(post);
 
 <Layout title={post.data.title} description={post.data.description}>
 
-  <article class="max-w-3xl mx-auto px-6 py-16">
+  <article class="max-w-6xl mx-auto px-6 py-16">
 
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 font-mono text-xs text-text-muted mb-10">
@@ -51,7 +51,7 @@ const { Content } = await render(post);
     </header>
 
     <!-- Content -->
-    <div class="prose prose-invert max-w-none
+    <div class="prose prose-invert max-w-3xl
       prose-headings:font-mono prose-headings:font-semibold prose-headings:text-text-primary prose-headings:tracking-tight
       prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4
       prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3
