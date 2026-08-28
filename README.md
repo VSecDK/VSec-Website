@@ -32,7 +32,7 @@ src/
 │   ├── communities/   # Partner and related communities
 │   ├── sponsors/      # Sponsors by tier (guld/sølv/bronze)
 │   ├── learning/      # Learning resources, CTF platforms, courses
-│   ├── incidents/     # Cybersecurity incidents (synced from CTI League)
+│   ├── incidents/     # Danish cybersecurity incidents
 │   └── config.ts      # Zod schemas for all collections
 ├── pages/             # Astro page routes
 ├── layouts/           # Page layout components
@@ -55,7 +55,7 @@ public/                # Static assets (images, favicons)
 | `communities` | External security communities | link, tags, featured |
 | `sponsors` | Financial supporters | tier (gold/silver/bronze), website |
 | `learning` | Curated learning resources | category, link, featured |
-| `incidents` | Danish cybersecurity incidents from [VSec CTI League](https://github.com/VSecDK/VSec-CTI-League) | company, sector, actor, date, type |
+| `incidents` | Danish cybersecurity incidents | company, sector, actor, date, type |
 
 ---
 
@@ -130,10 +130,6 @@ github: "yourgithub"
 ---
 ```
 
-### Security incidents
-
-Incidents are **not edited manually**. They are synced automatically from the [VSecDK/VSec-CTI-League](https://github.com/VSecDK/VSec-CTI-League) repository via the `vsec-github-cti-fetcher` Cloudflare Worker, which runs every Sunday and opens a PR with new cases.
-
 ---
 
 ## Companion services
@@ -144,7 +140,6 @@ The following Cloudflare Workers run as standalone services and interact with th
 |---|---|---|
 | `vsec-event-fetcher` | Monday 08:00 UTC | Searches for upcoming Danish security events and opens a PR |
 | `vsec-newsletter-generator` | Monday 09:00 UTC | Generates a weekly newsletter post using Cloudflare AI |
-| `vsec-github-cti-fetcher` | Sunday 06:00 UTC | Syncs new cybersecurity incidents from VSec CTI League |
 
 Each worker requires a GitHub fine-grained PAT with **Contents (R/W)** and **Pull requests (W)** permissions on this repository, stored as a `GITHUB_TOKEN` secret in Cloudflare.
 
