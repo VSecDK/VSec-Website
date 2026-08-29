@@ -2,7 +2,7 @@
 title: "Tech Hub Aarhus Day"
 description: "Inaugural tech conference covering Cybersecurity, Engineering, and Future Tech with keynotes, parallel sessions, and networking"
 date: 2026-03-12
-location: "Savværket, Søren Nymarks Vej 8A, 8270 Højbjerg"
+location: "Savværket, Højbjerg, Denmark"
 type: "conference"
 link: "https://www.techhubaarhus.com/the-tech-hub-aarhus-day"
 ---

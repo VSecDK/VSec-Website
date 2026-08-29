@@ -5,6 +5,7 @@ author: Kristian Bodeholt
 date: 2022-06-20
 tags: ["Member", "Community"]
 readingTime: "3 min"
+cover: "../../assets/posts/asbjorn-hoffskov.jpg"
 ---
 
 ***This is the second community spotlight, which is a series of articles highlighting people that take part in the local Danish non-profit Infosec communities/organisations in Denmark.***
@@ -16,7 +17,7 @@ After finishing my HHX (High School education with focus on Business and Trade) 
 
 Fast Forward some years, I was working at a factory, when a study released by 3F (major union) showed that 23% of persons from my birthyear would be facing early retirement due to physical wear and tear on their bodies. It was the same year as NotPetya was the thing, so when I had the opportunity, I signed up for an AP in Information Technology at UCN in Aalborg. My interest in IT in general, the NotPetya situation and things like knowing how to ping flood people off IRC have contributed to my interest in InfoSec.
 
-![Asbjørn Hoffskov](/images/posts/asbjorn-hoffskov.jpg)
+![Asbjørn Hoffskov](../../assets/posts/asbjorn-hoffskov.jpg)
 
 ## If you should give any advice to yourself when starting your infosec journey as what would it be?
 Relax, trust in your skills, and while open to the broader perspective, find your niche. Find something the others can't do.

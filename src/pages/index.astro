@@ -1,29 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { resolveAvatar, getInitials } from '../lib/avatar';
+import MemberCard from '../components/MemberCard.astro';
+import { getIncidentTypeConfig } from '../lib/incident-types';
+import { getOrgRepos } from '../lib/github';
 
-type TypeConfig = { label: string; style: string };
-const typeConfig: Record<string, TypeConfig> = {
-  ransomware:      { label: 'Ransomware',   style: 'text-red-400/80 border-red-400/20 bg-red-400/5' },
-  dataleak:        { label: 'Data Leak',    style: 'text-orange-400/80 border-orange-400/20 bg-orange-400/5' },
-  hacking:         { label: 'Hacking',      style: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5' },
-  'supply-chain':  { label: 'Supply chain', style: 'text-purple-400/80 border-purple-400/20 bg-purple-400/5' },
-  unknown:         { label: 'Unknown',      style: 'text-text-muted border-border bg-white/4' },
-};
-
-function getTypeConfig(t: string): TypeConfig {
-  return typeConfig[t.toLowerCase()] ?? {
-    label: t.charAt(0).toUpperCase() + t.slice(1),
-    style: 'text-accent/80 border-accent/20 bg-accent/5',
-  };
-}
 
 const posts = (await getCollection('posts'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 
-const todayStr = new Date().toLocaleDateString('sv-SE');
+// UTC on both sides — see the note in events.astro.
+const todayStr = new Date().toISOString().slice(0, 10);
 const events = (await getCollection('events'))
   .filter(e => e.data.date.toISOString().slice(0, 10) >= todayStr)
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
@@ -31,7 +19,7 @@ const events = (await getCollection('events'))
 
 const tierOrder = { gold: 0, silver: 1, bronze: 2 } as const;
 const tierStyle = {
-  gold:   'border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50',
+  gold:   'border-sev-amber/40 bg-sev-amber/5 hover:border-yellow-500/50',
   silver: 'border-slate-400/30 bg-slate-400/5 hover:border-slate-400/50',
   bronze: 'border-orange-700/30 bg-orange-700/5 hover:border-orange-700/50',
 } as const;
@@ -43,25 +31,32 @@ const sponsors = (await getCollection('sponsors'))
 const communities = (await getCollection('communities'))
   .sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0));
 
-const allMembers = (await getCollection('members'))
-  .sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0));
+const allMembers = await getCollection('members');
 
-// Serializable object for client-side JS
-const membersJson = allMembers.map(m => ({
-  name:          m.data.name,
-  handle:        m.data.handle,
-  bio:           m.data.bio ?? null,
-  verified:      m.data.verified,
-  featured:      m.data.featured,
-  roles:         m.data.roles,
-  avatarUrl:     resolveAvatar({ discordAvatar: m.data.discordAvatar, avatar: m.data.avatar, github: m.data.github }),
-  initials:      getInitials(m.data.name),
-  github:        m.data.github ?? null,
-  twitter:       m.data.twitter ?? null,
-  linkedin:      m.data.linkedin ?? null,
-  website:       m.data.website ?? null,
-  ctftime:       m.data.ctftime ?? null,
-}));
+// Carousel roster: featured members first, then a random sample of the rest.
+// Built here at build time and rendered as static HTML — the client script only
+// toggles visibility, so no member-controlled string is ever parsed as markup.
+const MEMBERS_PER_PAGE = 4;
+const MEMBER_PAGES = 6;
+
+function shuffle<T>(items: T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+const carouselRoster = [
+  ...allMembers.filter(m => m.data.featured),
+  ...shuffle(allMembers.filter(m => !m.data.featured)),
+].slice(0, MEMBERS_PER_PAGE * MEMBER_PAGES);
+
+const memberPages = Array.from(
+  { length: Math.ceil(carouselRoster.length / MEMBERS_PER_PAGE) },
+  (_, i) => carouselRoster.slice(i * MEMBERS_PER_PAGE, (i + 1) * MEMBERS_PER_PAGE),
+);
 
 const allPosts = await getCollection('posts');
 const allEvents = await getCollection('events');
@@ -69,26 +64,16 @@ const allIncidents = (await getCollection('incidents'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const recentCases = allIncidents.slice(0, 4);
 
-let githubProjectCount = 0;
-try {
-  const ghHeaders: Record<string, string> = { 'Accept': 'application/vnd.github+json' };
-  if (import.meta.env.GITHUB_TOKEN) ghHeaders['Authorization'] = `Bearer ${import.meta.env.GITHUB_TOKEN}`;
-  const ghRes = await fetch('https://api.github.com/orgs/VSecDK/repos?per_page=100&type=public', {
-    headers: ghHeaders,
-  });
-  if (ghRes.ok) {
-    const ghData = await ghRes.json() as { visibility: string; archived: boolean }[];
-    githubProjectCount = ghData.filter(r => r.visibility === 'public' && !r.archived).length;
-  }
-} catch {}
+// A failed lookup must not render as "0 Projects" — omit the stat instead.
+const repoResult = await getOrgRepos();
 
 const stats = [
-  { value: allMembers.length,      label: 'Members' },
-  { value: allPosts.length,        label: 'Posts' },
-  { value: allEvents.length,       label: 'Events' },
-  { value: githubProjectCount,     label: 'Projects' },
-  { value: communities.length,     label: 'Communities' },
-  { value: allIncidents.length,    label: 'Incidents' },
+  { value: allMembers.length,   label: 'Members' },
+  { value: allPosts.length,     label: 'Posts' },
+  { value: allEvents.length,    label: 'Events' },
+  ...(repoResult.ok ? [{ value: repoResult.repos.length, label: 'Projects' }] : []),
+  { value: communities.length,  label: 'Communities' },
+  { value: allIncidents.length, label: 'Incidents' },
 ];
 ---
 
@@ -146,7 +131,7 @@ const stats = [
         <p class="section-label">// Community</p>
         <h2 class="font-mono font-bold text-2xl text-text-primary">Latest posts</h2>
       </div>
-      <a href="/posts" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+      <a href="/posts" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
         All posts →
       </a>
     </div>
@@ -184,143 +169,132 @@ const stats = [
           <p class="section-label">// Community</p>
           <h2 class="font-mono font-bold text-2xl text-text-primary">Verified members</h2>
         </div>
-        <a href="/members" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
-          All members →
+        <a href="/members" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
+          All members &rarr;
         </a>
       </div>
 
-      <!-- Grid populated by JS -->
-      <div
-        id="members-grid"
-        class="grid sm:grid-cols-2 gap-5 transition-opacity duration-500"
-        aria-live="polite"
-        aria-label="Members"
-      ></div>
+      <!--
+        Fully server-rendered. The client script only toggles the `hidden`
+        attribute on these pre-rendered pages, so member-supplied text is never
+        interpolated into markup at runtime.
+      -->
+      <div id="members-carousel" data-members-carousel>
+        {memberPages.map((page, i) => (
+          <div
+            class="grid sm:grid-cols-2 gap-5"
+            data-member-page={i}
+            hidden={i !== 0}
+          >
+            {page.map(m => (
+              <MemberCard
+                name={m.data.name}
+                handle={m.data.handle}
+                bio={m.data.bio}
+                avatar={m.data.avatar}
+                discordAvatar={m.data.discordAvatar}
+                github={m.data.github}
+                twitter={m.data.twitter}
+                linkedin={m.data.linkedin}
+                website={m.data.website}
+                ctftime={m.data.ctftime}
+                roles={m.data.roles}
+                verified={m.data.verified}
+                featured={m.data.featured}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
 
-      <!-- Pagination dots -->
-      <div id="members-dots" class="flex justify-center gap-2 mt-8" role="group" aria-label="Pages"></div>
+      {memberPages.length > 1 && (
+        <div class="flex justify-center items-center gap-4 mt-8">
+          <div id="members-dots" class="flex items-center gap-2" role="group" aria-label="Member pages">
+            {memberPages.map((_, i) => (
+              <button
+                type="button"
+                class="mc-dot"
+                data-member-dot={i}
+                aria-label={`Show member page ${i + 1} of ${memberPages.length}`}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+              ></button>
+            ))}
+          </div>
 
-      <script is:inline define:vars={{ membersJson }}>
-        const PER_PAGE = 4;
-        const MAX_PAGES = 10;
-        const INTERVAL = 20000;
-        const members = membersJson.slice().sort(() => Math.random() - 0.5);
-        const pageCount = Math.min(Math.ceil(members.length / PER_PAGE), MAX_PAGES);
-        let current = 0;
-        let timer;
-
-        const grid   = document.getElementById('members-grid');
-        const dotsEl = document.getElementById('members-dots');
-
-        const ICON = {
-          github:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844a9.59 9.59 0 012.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>`,
-          twitter:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-          linkedin: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
-          website:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`,
-          ctftime:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-        };
-
-        function buildCard(m) {
-          const avatarHtml = m.avatarUrl
-            ? `<div class="mc-avatar">
-                 <img src="${m.avatarUrl}" alt="${m.name}" class="mc-avatar-img"
-                      onerror="this.parentNode.textContent='${m.initials}'">
-               </div>`
-            : `<div class="mc-avatar">${m.initials}</div>`;
-
-          const badge = m.verified
-            ? `<svg class="mc-badge" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-label="Verified" role="img">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-            : '';
-
-          const skipRoles = new Set(['verified', 'moderator', 'administrator']);
-          const roles = m.roles
-            .filter(r => !skipRoles.has(r.toLowerCase()))
-            .slice(0, 3)
-            .map(r => `<span class="mc-role">${r}</span>`)
-            .join('');
-
-          const socials = [
-            m.github   && { href: `https://github.com/${m.github}`,                                           icon: ICON.github   },
-            m.twitter  && { href: `https://twitter.com/${m.twitter}`,                                         icon: ICON.twitter  },
-            m.linkedin && { href: `https://linkedin.com/in/${m.linkedin}`,                                    icon: ICON.linkedin },
-            m.website  && { href: m.website.startsWith('http') ? m.website : `https://${m.website}`,         icon: ICON.website  },
-            m.ctftime  && { href: m.ctftime.startsWith('http') ? m.ctftime : `https://ctftime.org/user/${m.ctftime}`, icon: ICON.ctftime  },
-          ].filter(Boolean);
-
-          const socialsHtml = socials.length
-            ? `<div class="mc-socials">
-                ${socials.map(s => `<a href="${s.href}" target="_blank" rel="noopener noreferrer" class="mc-social">${s.icon}</a>`).join('')}
-               </div>`
-            : '';
-
-          const bio = m.bio
-            ? `<p class="mc-bio">${m.bio}</p>`
-            : '';
-
-          return `
-            <div class="mc-card">
-              <div class="mc-avatar-wrap">${avatarHtml}</div>
-              <div class="mc-body">
-                <div class="mc-header">
-                  <div class="mc-name-row">
-                    <span class="mc-name">${m.name}</span>
-                    ${badge}
-                  </div>
-                  <span class="mc-handle">@${m.handle}</span>
-                </div>
-                ${roles ? `<div class="mc-roles">${roles}</div>` : ''}
-                ${bio}
-                ${socialsHtml}
-              </div>
-            </div>`;
-        }
-
-        function buildDots() {
-          dotsEl.innerHTML = Array.from({ length: pageCount }, (_, i) =>
-            `<button class="mc-dot" data-i="${i}" aria-label="Page ${i + 1}" aria-pressed="${i === current}"></button>`
-          ).join('');
-          dotsEl.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-              clearInterval(timer);
-              goTo(+btn.dataset.i);
-              startTimer();
-            });
-            btn.addEventListener('keydown', (e) => {
-              if (e.key === 'ArrowRight') { clearInterval(timer); goTo((current + 1) % pageCount); startTimer(); }
-              if (e.key === 'ArrowLeft')  { clearInterval(timer); goTo((current - 1 + pageCount) % pageCount); startTimer(); }
-            });
-          });
-        }
-
-        function render() {
-          const slice = members.slice(current * PER_PAGE, current * PER_PAGE + PER_PAGE);
-          grid.innerHTML = slice.map(buildCard).join('');
-          buildDots();
-        }
-
-        function goTo(page) {
-          current = page;
-          grid.setAttribute('aria-busy', 'true');
-          grid.classList.add('opacity-0');
-          setTimeout(() => {
-            render();
-            grid.classList.remove('opacity-0');
-            grid.setAttribute('aria-busy', 'false');
-          }, 300);
-        }
-
-        function startTimer() {
-          timer = setInterval(() => goTo((current + 1) % pageCount), INTERVAL);
-        }
-
-        goTo(0);
-        if (pageCount > 1) startTimer();
-      </script>
-
+          <button
+            type="button"
+            id="members-playpause"
+            class="font-mono text-[10px] uppercase tracking-widest text-text-muted hover:text-accent transition-colors duration-200 border border-border rounded px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            aria-pressed="false"
+          >Pause</button>
+        </div>
+      )}
     </div>
   </section>
+
+  <script>
+    // Visibility-only carousel: no markup is generated at runtime.
+    const carousel = document.querySelector<HTMLElement>('[data-members-carousel]');
+    const playPause = document.getElementById('members-playpause') as HTMLButtonElement | null;
+
+    if (carousel) {
+      const pages = Array.from(carousel.querySelectorAll<HTMLElement>('[data-member-page]'));
+      const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-member-dot]'));
+      const INTERVAL = 20000;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      let current = 0;
+      let timer: number | undefined;
+      let paused = false;
+
+      function show(index: number) {
+        current = (index + pages.length) % pages.length;
+        pages.forEach((page, i) => { page.hidden = i !== current; });
+        dots.forEach((dot, i) => dot.setAttribute('aria-pressed', String(i === current)));
+      }
+
+      function stop() {
+        if (timer !== undefined) window.clearInterval(timer);
+        timer = undefined;
+      }
+
+      function start() {
+        stop();
+        // Respect the user's motion preference and an explicit pause.
+        if (paused || reduceMotion.matches || pages.length < 2) return;
+        timer = window.setInterval(() => show(current + 1), INTERVAL);
+      }
+
+      function setPaused(next: boolean) {
+        paused = next;
+        if (playPause) {
+          playPause.textContent = paused ? 'Play' : 'Pause';
+          playPause.setAttribute('aria-pressed', String(paused));
+        }
+        start();
+      }
+
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => { show(i); start(); });
+      });
+
+      playPause?.addEventListener('click', () => setPaused(!paused));
+
+      // Pause while the user is reading or tabbing through a card.
+      carousel.addEventListener('pointerenter', stop);
+      carousel.addEventListener('focusin', stop);
+      carousel.addEventListener('pointerleave', start);
+      carousel.addEventListener('focusout', start);
+
+      reduceMotion.addEventListener('change', start);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop(); else start();
+      });
+
+      if (reduceMotion.matches && playPause) playPause.hidden = true;
+      start();
+    }
+  </script>
 
   <!-- Upcoming events -->
   <section class="border-t border-border">
@@ -330,7 +304,7 @@ const stats = [
           <p class="section-label">// Calendar</p>
           <h2 class="font-mono font-bold text-2xl text-text-primary">Upcoming events</h2>
         </div>
-        <a href="/events" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+        <a href="/events" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
           All events →
         </a>
       </div>
@@ -351,8 +325,8 @@ const stats = [
                 <span class="tag">{event.data.type}</span>
                 <span class="font-mono text-xs text-text-muted">{event.data.location}</span>
               </div>
-              <h3 class="font-mono font-semibold text-text-primary">{event.data.title}</h3>
-              <p class="font-sans text-sm text-text-secondary mt-1">{event.data.description}</p>
+              <h3 class="font-mono font-semibold text-text-primary" lang={event.data.lang}>{event.data.title}</h3>
+              <p class="font-sans text-sm text-text-secondary mt-1" lang={event.data.lang}>{event.data.description}</p>
             </div>
             {event.data.link && (
               <a
@@ -379,14 +353,14 @@ const stats = [
           <h2 class="font-mono font-bold text-2xl text-text-primary">Latest incidents</h2>
           <p class="font-sans text-sm text-text-secondary mt-1">Documented Danish cybersecurity incidents.</p>
         </div>
-        <a href="/incidents" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+        <a href="/incidents" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
           All incidents →
         </a>
       </div>
 
       <div class="flex flex-col gap-2">
         {recentCases.map(entry => {
-          const tc = getTypeConfig(entry.data.type);
+          const tc = getIncidentTypeConfig(entry.data.type);
           return (
             <a
               href={`/incidents/${entry.id}`}
@@ -424,7 +398,7 @@ const stats = [
           <h2 class="font-mono font-bold text-2xl text-text-primary">Communities</h2>
           <p class="font-sans text-sm text-text-secondary mt-1">Other places in the security community worth knowing.</p>
         </div>
-        <a href="/communities" class="font-mono text-sm text-accent/70 hover:text-accent transition-colors duration-200">
+        <a href="/communities" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
           See all →
         </a>
       </div>
@@ -538,7 +512,7 @@ const stats = [
 
       <div class="mt-10 space-y-2">
         <p class="font-mono text-xs text-text-muted">Interested in sponsoring VSec?</p>
-        <a href="mailto:info@vsec.dk" class="font-mono text-xs text-accent/70 hover:text-accent transition-colors duration-200">
+        <a href="mailto:info@vsec.dk" class="font-mono text-xs text-accent-text hover:text-accent transition-colors duration-200">
           info@vsec.dk →
         </a>
       </div>

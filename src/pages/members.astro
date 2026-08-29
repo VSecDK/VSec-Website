@@ -28,8 +28,8 @@ const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'da'));
         <p class="section-label">// Community</p>
         <h1 class="font-mono font-bold text-2xl sm:text-3xl md:text-4xl text-text-primary mb-2">Members</h1>
         <p class="font-sans text-text-secondary max-w-lg leading-relaxed">
-          Verified members of the VSec community.
-          Verification is done via our Discord bot, which links your Discord profile to your VSec identity.
+          Everyone listed here is a verified member — verification links a Discord profile to a
+          VSec identity, so we show it once here rather than as a badge on all {members.length} cards.
         </p>
       </div>
       <div class="flex-shrink-0 sm:text-right">
@@ -39,13 +39,13 @@ const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'da'));
     </div>
 
     <!-- Bot under development warning -->
-    <div class="mb-6 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-3">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-yellow-400 flex-shrink-0 mt-0.5" aria-hidden="true">
+    <div class="mb-6 p-4 rounded-lg border border-sev-amber/40 bg-sev-amber/5 flex items-start gap-3">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-sev-amber flex-shrink-0 mt-0.5" aria-hidden="true">
         <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <p class="font-mono text-xs text-yellow-400 leading-relaxed">
-        The Discord verification bot is currently under development. Member profiles and avatars may be incomplete.
+      <p class="font-mono text-xs text-sev-amber leading-relaxed">
+        The Discord verification bot is still under development, so avatars and bios are filled in by hand for now and some may be out of date.
       </p>
     </div>
 
@@ -58,7 +58,7 @@ const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'da'));
       <div>
         <p class="font-mono text-sm text-text-primary mb-1">How to get verified</p>
         <p class="font-sans text-xs text-text-secondary leading-relaxed">
-          Use the <code class="font-mono text-accent/80 bg-accent/5 px-1 rounded">/verify</code> command in our Discord server.
+          Use the <code class="font-mono text-accent-text bg-accent/5 px-1 rounded">/verify</code> command in our Discord server.
           The bot will automatically link your Discord profile to your VSec page and fill in your avatar and username.
         </p>
       </div>
@@ -81,7 +81,7 @@ const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'da'));
       {letters.map(letter => (
         <section id={`letter-${letter}`}>
           <div class="flex items-center gap-4 mb-5">
-            <span class="font-mono font-bold text-2xl sm:text-4xl text-accent/20 leading-none select-none">{letter}</span>
+            <span class="font-mono font-bold text-2xl sm:text-4xl text-text-muted leading-none select-none">{letter}</span>
             <div class="flex-1 h-px bg-border"></div>
             <span class="font-mono text-xs text-text-muted">{grouped[letter].length}</span>
           </div>

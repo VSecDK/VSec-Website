@@ -5,6 +5,7 @@ author: Kristian Bodeholt
 date: 2022-04-02
 tags: ["Member", "Community"]
 readingTime: "6 min"
+cover: "../../assets/posts/christian-henriksen.jpg"
 ---
 
 ***This is the first community spotlight, which is a series of articles highlighting people that take part in the local Danish non-profit Infosec communities/organisations in Denmark.***
@@ -12,7 +13,7 @@ readingTime: "6 min"
 ## Tell us a little about yourself, work, background and why you got interested in information security
 My name is Christian Henriksen, and I graduated from Aalborg University with a BSc. In Information Technology in 2020. After 3 years behind books, I decided to serve my conscript within the Danish military. I was so lucky to get accepted to the Danish Cyber Conscript, which I finished in 2021. As the serving was 10 months, I knew that I had to find a job afterwards or stay within the military. I therefor applied for a job in Region Midt, which I got, and since then I have been working on, how we can better secure the Danish hospitals. I actually just signed a new contract with Trifork.Security, where I will be working as Cyber Security Consultant. During my bachelor's degree, I studied a semester abroad, in San Jose California, at San Jose State University. At the university, I had a lecture on business systems and policy, where my professor worked with IT security at the municipality in the local area. He told me how this organization's approach was in regard to this topic, and it created seriousness and interest in me. Likewise, I attended a lecture and workshop on IT security, where, among other things, speakers from the NSA, Lockheed Martin etc. participated in the National Cyber Security Day.
 
-![Christian Henriksen](/images/posts/christian-henriksen.jpg)
+![Christian Henriksen](../../assets/posts/christian-henriksen.jpg)
 
 ## Could you explain are bit more about being a cyber conscript and what the requirements are?
 Cyber conscription is a political initiative that will hatch approx. 30+ new digital security talents a year - some of the purpose is to be ambassadors for good IT security in the Danish kingdom. The conscription period is a total of 10 months, divided into two sections:
