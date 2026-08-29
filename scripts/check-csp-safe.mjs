@@ -8,11 +8,17 @@
  *
  * If this fires, check astro.config.mjs still sets
  * `build.inlineStylesheets: 'never'` and `vite.build.assetsInlineLimit: 0`.
+ *
+ * This walks a real HTML parser rather than matching tags with a regex. A regex
+ * version of this check missed `</script >` and unclosed `<script>` tags — the
+ * same class of gap that made the old incident sanitiser bypassable.
  */
 import { readdir, readFile } from 'fs/promises';
 import path from 'path';
+import { Parser } from 'htmlparser2';
 
 const DIST = 'dist';
+const JSON_SCRIPT_TYPES = new Set(['application/ld+json', 'application/json', 'importmap', 'speculationrules']);
 
 async function htmlFiles(dir) {
   const out = [];
@@ -24,27 +30,58 @@ async function htmlFiles(dir) {
   return out;
 }
 
-const offenders = [];
+/** Returns a list of CSP-violating constructs found in one HTML document. */
+function findInlineBlocks(html, file) {
+  const found = [];
+  let current = null; // { kind, attribs } while inside a script/style element
+
+  const parser = new Parser(
+    {
+      onopentag(name, attribs) {
+        if (name === 'script') {
+          // <script src="..."> is external and therefore fine.
+          if (attribs.src) return;
+          if (JSON_SCRIPT_TYPES.has((attribs.type ?? '').toLowerCase())) return;
+          current = { kind: 'script', text: '' };
+        } else if (name === 'style') {
+          current = { kind: 'style', text: '' };
+        }
+
+        // A style="..." attribute is also refused under style-src 'self'.
+        if (attribs.style && attribs.style.trim()) {
+          found.push(`${file}: inline style attribute on <${name}> (${attribs.style.trim().slice(0, 40)}…)`);
+        }
+      },
+      ontext(text) {
+        if (current) current.text += text;
+      },
+      onclosetag(name) {
+        if (!current) return;
+        if (name !== current.kind) return;
+        if (current.text.trim()) {
+          found.push(`${file}: inline <${current.kind}> (${current.text.trim().length} bytes)`);
+        }
+        current = null;
+      },
+      onend() {
+        // An unclosed <script>/<style> still carries a body the browser refuses.
+        if (current && current.text.trim()) {
+          found.push(`${file}: unclosed inline <${current.kind}> (${current.text.trim().length} bytes)`);
+        }
+      },
+    },
+    { lowerCaseTags: true, lowerCaseAttributeNames: true, recognizeSelfClosing: true },
+  );
+
+  parser.write(html);
+  parser.end();
+  return found;
+}
+
 const files = await htmlFiles(DIST);
-
+const offenders = [];
 for (const file of files) {
-  const html = await readFile(file, 'utf8');
-
-  // An inline <script> is one with a body; <script src=...> is fine.
-  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
-    const [, attrs, body] = match;
-    if (/\bsrc=/i.test(attrs)) continue;
-    if (/\btype=["'](application\/ld\+json|application\/json)["']/i.test(attrs)) continue;
-    if (body.trim()) offenders.push(`${file}: inline <script> (${body.trim().length} bytes)`);
-  }
-
-  for (const match of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
-    if (match[1].trim()) offenders.push(`${file}: inline <style> (${match[1].trim().length} bytes)`);
-  }
-
-  for (const match of html.matchAll(/\sstyle=["'][^"']+["']/gi)) {
-    offenders.push(`${file}: inline style attribute (${match[0].trim().slice(0, 40)}…)`);
-  }
+  offenders.push(...findInlineBlocks(await readFile(file, 'utf8'), file));
 }
 
 if (offenders.length > 0) {
