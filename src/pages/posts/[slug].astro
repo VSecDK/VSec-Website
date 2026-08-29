@@ -12,9 +12,23 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// Astro reports jpg/jpeg as "jpg"; og:image:type needs a real MIME type.
+const IMAGE_MIME: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' };
+const coverMime = post.data.cover ? IMAGE_MIME[post.data.cover.format] ?? 'image/jpeg' : undefined;
 ---
 
-<Layout title={post.data.title} description={post.data.description}>
+<Layout
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.date}
+  author={post.data.author}
+  image={post.data.cover?.src}
+  imageWidth={post.data.cover?.width}
+  imageHeight={post.data.cover?.height}
+  imageType={coverMime}
+>
 
   <article class="max-w-6xl mx-auto px-6 py-16">
 
@@ -39,19 +53,19 @@ const { Content } = await render(post);
       </h1>
       <div class="flex items-center gap-4 font-mono text-xs text-text-muted">
         <span>{post.data.author}</span>
-        <span class="text-border">·</span>
+        <span class="text-text-muted">·</span>
         <span>{post.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
         {post.data.readingTime && (
           <>
-            <span class="text-border">·</span>
-            <span class="text-accent/60">{post.data.readingTime} read</span>
+            <span class="text-text-muted">·</span>
+            <span class="text-accent-text">{post.data.readingTime} read</span>
           </>
         )}
       </div>
     </header>
 
     <!-- Content -->
-    <div class="prose prose-invert max-w-3xl
+    <div class="prose prose-vsec max-w-3xl
       prose-headings:font-mono prose-headings:font-semibold prose-headings:text-text-primary prose-headings:tracking-tight
       prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4
       prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3
@@ -60,7 +74,7 @@ const { Content } = await render(post);
       prose-ol:my-4 prose-ol:space-y-2
       prose-li:font-sans prose-li:text-text-secondary prose-li:leading-relaxed
       prose-a:text-accent prose-a:no-underline hover:prose-a:underline
-      prose-code:font-mono prose-code:text-accent/80 prose-code:bg-accent/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+      prose-code:font-mono prose-code:text-accent-text prose-code:bg-accent/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
       prose-pre:bg-bg-surface prose-pre:border prose-pre:border-border prose-pre:rounded-lg
       prose-strong:text-text-primary prose-strong:font-semibold
       prose-hr:border-border prose-hr:my-8">

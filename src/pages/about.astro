@@ -14,8 +14,8 @@ const founderSocials = founder ? [
   founder.data.github   && { href: `https://github.com/${founder.data.github}`,                                                                    label: 'GitHub'   },
   founder.data.twitter  && { href: `https://twitter.com/${founder.data.twitter}`,                                                                   label: 'Twitter'  },
   founder.data.linkedin && { href: `https://linkedin.com/in/${founder.data.linkedin}`,                                                              label: 'LinkedIn' },
-  founder.data.website  && { href: founder.data.website.startsWith('http') ? founder.data.website : `https://${founder.data.website}`,              label: 'Website'  },
-  founder.data.ctftime  && { href: founder.data.ctftime.startsWith('http') ? founder.data.ctftime : `https://ctftime.org/user/${founder.data.ctftime}`, label: 'CTFtime' },
+  founder.data.website  && { href: founder.data.website,                                            label: 'Website'  },
+  founder.data.ctftime  && { href: `https://ctftime.org/user/${founder.data.ctftime}`,              label: 'CTFtime' },
 ].filter(Boolean) as { href: string; label: string }[] : [];
 
 const moderators = allMembers
@@ -25,7 +25,6 @@ const moderators = allMembers
     name:      m.data.name,
     handle:    m.data.handle,
     bio:       m.data.bio ?? null,
-    verified:  m.data.verified,
     avatarUrl: resolveAvatar({ discordAvatar: m.data.discordAvatar, avatar: m.data.avatar, github: m.data.github }),
     initials:  getInitials(m.data.name),
     github:    m.data.github ?? null,
@@ -107,7 +106,7 @@ const moderators = allMembers
         <p class="font-sans text-sm text-text-secondary leading-relaxed mb-3">
           For general enquiries, reach out via email or Discord.
         </p>
-        <a href="mailto:info@vsec.dk" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+        <a href="mailto:info@vsec.dk" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200 flex items-center gap-2">
           <Icon name="email" size={13} />
           info@vsec.dk
         </a>
@@ -116,13 +115,15 @@ const moderators = allMembers
         <p class="font-mono text-xs text-text-muted uppercase tracking-widest mb-3">Corrections</p>
         <p class="font-sans text-sm text-text-secondary leading-relaxed mb-3">
           If any information on this website is confusing, incorrect, or incomplete, feel free to reach out.
+          Found a security vulnerability? Please use our
+          <a href="/security-policy" class="text-accent-text hover:text-accent transition-colors">security policy</a> instead.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+          <a href="https://discord.com/invite/XCUja4Q" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200 flex items-center gap-2">
             <Icon name="discord" size={13} />
             Discord
           </a>
-          <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-accent/80 hover:text-accent transition-colors duration-200 flex items-center gap-2">
+          <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200 flex items-center gap-2">
             <Icon name="github" size={13} />
             Open an issue
           </a>
@@ -140,8 +141,8 @@ const moderators = allMembers
             m.github   && { href: `https://github.com/${m.github}`,                                                    label: 'GitHub'   },
             m.twitter  && { href: `https://twitter.com/${m.twitter}`,                                                  label: 'Twitter'  },
             m.linkedin && { href: `https://linkedin.com/in/${m.linkedin}`,                                             label: 'LinkedIn' },
-            m.website  && { href: m.website.startsWith('http') ? m.website : `https://${m.website}`,                  label: 'Website'  },
-            m.ctftime  && { href: m.ctftime.startsWith('http') ? m.ctftime : `https://ctftime.org/user/${m.ctftime}`, label: 'CTFtime'  },
+            m.website  && { href: m.website,                                       label: 'Website'  },
+            m.ctftime  && { href: `https://ctftime.org/user/${m.ctftime}`,          label: 'CTFtime'  },
           ].filter(Boolean) as { href: string; label: string }[];
           return (
             <div class="card flex gap-4">
@@ -167,9 +168,6 @@ const moderators = allMembers
                 <div class="mb-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="font-mono font-semibold text-sm text-text-primary">{m.name}</span>
-                    {m.verified && (
-                      <Icon name="verified" size={14} class="text-accent flex-shrink-0" role="img" aria-label="Verified member" />
-                    )}
                   </div>
                   <span class="font-mono text-xs text-text-muted">@{m.handle}</span>
                 </div>
@@ -281,7 +279,7 @@ const moderators = allMembers
               'Behaving in other ways that threaten the well-being of our community.',
             ].map(item => (
               <li class="flex items-start gap-3">
-                <span class="font-mono text-red-400/70 mt-0.5 flex-shrink-0">–</span>
+                <span class="font-mono text-sev-red mt-0.5 flex-shrink-0">–</span>
                 <span>{item}</span>
               </li>
             ))}
@@ -295,7 +293,7 @@ const moderators = allMembers
               'Irresponsible communication. Failing to responsibly present content which includes, links or describes any other restricted behaviors.',
             ].map(item => (
               <li class="flex items-start gap-3">
-                <span class="font-mono text-red-400/70 mt-0.5 flex-shrink-0">–</span>
+                <span class="font-mono text-sev-red mt-0.5 flex-shrink-0">–</span>
                 <span>{item}</span>
               </li>
             ))}
@@ -328,7 +326,7 @@ const moderators = allMembers
               { level: '04', title: 'Permanent ban', desc: 'Removal from all community spaces for patterns of violation that other steps have failed to resolve, or a violation of extreme severity.' },
             ].map(step => (
               <div class="flex gap-4 items-start">
-                <span class="font-mono text-xs text-accent/40 mt-0.5 flex-shrink-0 w-6">{step.level}</span>
+                <span class="font-mono text-xs text-accent-text mt-0.5 flex-shrink-0 w-6">{step.level}</span>
                 <div>
                   <p class="font-mono text-sm text-text-primary mb-1">{step.title}</p>
                   <p class="text-sm">{step.desc}</p>
@@ -351,15 +349,15 @@ const moderators = allMembers
         <section class="pt-4 border-t border-border">
           <p class="font-mono text-xs text-text-muted">
             This code of conduct is adapted from the{' '}
-            <a href="https://www.contributor-covenant.org/version/3/0/code_of_conduct/" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">
+            <a href="https://www.contributor-covenant.org/version/3/0/code_of_conduct/" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">
               Contributor Covenant v3.0
             </a>
             , stewarded by the{' '}
-            <a href="https://ethicalsource.dev" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">
+            <a href="https://ethicalsource.dev" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">
               Organization for Ethical Source
             </a>
             {' '}and licensed under{' '}
-            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">
               CC BY-SA 4.0
             </a>.
           </p>
@@ -399,7 +397,7 @@ const moderators = allMembers
           <h3 class="font-mono font-semibold text-text-primary mb-2">UN 2030 Agenda</h3>
           <p class="font-sans text-sm text-text-secondary leading-relaxed">
             VSec is committed to supporting the{' '}
-            <a href="https://sdgs.un.org/goals" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">
+            <a href="https://sdgs.un.org/goals" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">
               UN 2030 Agenda for Sustainable Development
             </a>{' '}
             and its 17 Global Goals. Any unused community funds are directed toward initiatives aligned with these goals.
@@ -529,16 +527,16 @@ const moderators = allMembers
         ].map(feed => (
           <a
             href={feed.href}
-            class="card group flex flex-col gap-3 hover:border-orange-400/20 transition-colors duration-200"
+            class="card group flex flex-col gap-3 hover:border-sev-orange/40 transition-colors duration-200"
           >
             <div class="flex items-center gap-2">
-              <Icon name="rss" size={16} class="text-orange-400 flex-shrink-0" />
-              <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-orange-400 transition-colors duration-200">
+              <Icon name="rss" size={16} class="text-sev-orange flex-shrink-0" />
+              <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-sev-orange transition-colors duration-200">
                 {feed.title}
               </h3>
             </div>
             <p class="font-sans text-xs text-text-secondary leading-relaxed">{feed.desc}</p>
-            <span class="font-mono text-[10px] text-orange-400/60 mt-auto">{feed.href}</span>
+            <span class="font-mono text-[10px] text-sev-orange mt-auto">{feed.href}</span>
           </a>
         ))}
       </div>

@@ -1,7 +1,7 @@
 {
   "name": "VSec",
   "short_name": "VSec",
-  "description": "VSec – The Danish infosec community",
+  "description": "VSec \u2013 The Danish infosec community",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080c10",
@@ -24,12 +24,6 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/discord-server-icon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

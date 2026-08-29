@@ -3,8 +3,12 @@ import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import SearchFilter from '../components/SearchFilter.astro';
 
-// Compare date strings (YYYY-MM-DD) to avoid UTC/local timezone errors
-const todayStr = new Date().toLocaleDateString('sv-SE');
+// Event dates are authored as plain calendar dates, so zod parses them to
+// midnight UTC. Compare against a UTC "today" so both sides use the same
+// clock — mixing toISOString() with a local date flipped events across the
+// upcoming/past boundary depending on when the build ran. The client script
+// below then refines this against the visitor's own local date.
+const todayStr = new Date().toISOString().slice(0, 10);
 
 const allEvents = (await getCollection('events'))
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
@@ -82,8 +86,8 @@ const typeLabel: Record<string, string> = {
                       {event.data.location}
                     </span>
                   </div>
-                  <h3 class="font-mono font-semibold text-text-primary">{event.data.title}</h3>
-                  <p class="font-sans text-sm text-text-secondary mt-1">{event.data.description}</p>
+                  <h3 class="font-mono font-semibold text-text-primary" lang={event.data.lang}>{event.data.title}</h3>
+                  <p class="font-sans text-sm text-text-secondary mt-1" lang={event.data.lang}>{event.data.description}</p>
                 </div>
                 {event.data.link && (
                   <a href={event.data.link} target="_blank" rel="noopener noreferrer" class="btn-primary text-sm flex-shrink-0">
@@ -113,7 +117,7 @@ const typeLabel: Record<string, string> = {
                   {event.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </div>
                 <span class="tag">{typeLabel[event.data.type]}</span>
-                <p class="font-mono text-sm text-text-secondary">{event.data.title}</p>
+                <p class="font-mono text-sm text-text-secondary" lang={event.data.lang}>{event.data.title}</p>
                 <span class="font-mono text-xs text-text-muted md:ml-auto">{event.data.location}</span>
               </div>
             ))}

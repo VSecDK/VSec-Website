@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Privacy"
+  description="What vsec.dk stores about you — and what it does not"
+>
+  <div class="max-w-6xl mx-auto px-6 py-16">
+    <p class="section-label">// Data protection</p>
+    <h1 class="font-mono font-bold text-2xl sm:text-3xl md:text-4xl text-text-primary mb-4">Privacy</h1>
+    <p class="font-sans text-text-secondary max-w-2xl leading-relaxed mb-12">
+      Short version: this is a static website. It sets no cookies, runs no analytics, and sends
+      nothing about you to anyone else.
+    </p>
+
+    <div class="space-y-10 font-sans text-text-secondary leading-relaxed max-w-3xl">
+      <section>
+        <h2 class="font-mono font-semibold text-text-primary mb-3">What this site does not do</h2>
+        <ul class="space-y-2 list-none">
+          {[
+            'No cookies, no localStorage beyond your own theme choice, no tracking pixels.',
+            'No analytics, no advertising, no A/B testing, no session recording.',
+            'No third-party requests. Fonts are served from vsec.dk, not from a font CDN, so no external party sees your IP address when you read a page.',
+            'No forms, no accounts, and no way to submit personal data through this site.',
+          ].map(item => (
+            <li class="flex items-start gap-3">
+              <span class="font-mono text-accent-text mt-0.5 flex-shrink-0">+</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-mono font-semibold text-text-primary mb-3">Your theme preference</h2>
+        <p>
+          When you pick light, dark, or system in the header, that choice is saved in your browser&rsquo;s
+          <code class="font-mono text-accent-text bg-accent/5 px-1 rounded">localStorage</code> under the key
+          <code class="font-mono text-accent-text bg-accent/5 px-1 rounded">vsec-theme</code>. It never leaves your
+          device and we cannot read it. Clearing your browser data removes it.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-mono font-semibold text-text-primary mb-3">Hosting logs</h2>
+        <p>
+          The site is served by Cloudflare Pages. Like any web host, Cloudflare processes the
+          connection data needed to deliver a page — including your IP address — as our data
+          processor, and discards it on their standard retention schedule. We do not receive,
+          store, or analyse those logs.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-mono font-semibold text-text-primary mb-3">Member profiles</h2>
+        <p class="mb-3">
+          Member pages contain only what a member chose to publish: a name or handle, an optional
+          short bio, an avatar, and links to profiles they already made public. All of it lives in
+          public markdown files in our
+          <a href="https://github.com/VSecDK/VSec-Website" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">public repository</a>,
+          added by the member or with their consent.
+        </p>
+        <p>
+          To correct or remove your profile, open a pull request, or email
+          <a href="mailto:info@vsec.dk" class="text-accent-text hover:text-accent transition-colors">info@vsec.dk</a>
+          and we will remove it. Because the repository is public and version-controlled, removal
+          takes the profile off the site and out of the current source; earlier commits remain in
+          git history unless you ask us to rewrite it.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-mono font-semibold text-text-primary mb-3">Your rights</h2>
+        <p>
+          Under the GDPR you can ask us for access to, correction of, or erasure of any personal
+          data we hold about you, and you can complain to
+          <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">Datatilsynet</a>,
+          the Danish data protection authority. In practice the only personal data we hold is a
+          member profile you gave us. Write to
+          <a href="mailto:info@vsec.dk" class="text-accent-text hover:text-accent transition-colors">info@vsec.dk</a>.
+        </p>
+      </section>
+
+      <section class="pt-6 border-t border-border">
+        <p class="font-mono text-xs text-text-muted">
+          Security vulnerabilities go to
+          <a href="/security-policy" class="text-accent-text hover:text-accent transition-colors">our security policy</a>, not here.
+        </p>
+      </section>
+    </div>
+  </div>
+</Layout>

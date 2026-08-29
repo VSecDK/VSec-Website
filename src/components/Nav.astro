@@ -20,19 +20,19 @@ const current = Astro.url.pathname;
   <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between" aria-label="Main navigation">
 
     <a href="/" class="font-mono font-semibold text-text-primary tracking-tight flex items-center gap-1.5 group">
-      <span class="text-accent group-hover:text-accent/80 transition-colors duration-200">[</span>
+      <span class="text-accent group-hover:text-accent-text transition-colors duration-200">[</span>
       <span class="group-hover:text-accent transition-colors duration-200">VSec</span>
-      <span class="text-accent group-hover:text-accent/80 transition-colors duration-200">]</span>
+      <span class="text-accent group-hover:text-accent-text transition-colors duration-200">]</span>
     </a>
 
     <!-- Desktop menu -->
-    <ul class="hidden md:flex items-center gap-1">
+    <ul class="hidden lg:flex items-center gap-0.5">
       {links.map(link => (
         <li>
           <a
             href={link.href}
             class:list={[
-              'font-mono text-sm px-3 py-1.5 rounded transition-colors duration-200',
+              'font-mono text-[13px] px-2 py-1.5 rounded transition-colors duration-200',
               current.startsWith(link.href)
                 ? 'text-accent bg-accent/8'
                 : 'text-text-secondary hover:text-text-primary hover:bg-white/4',
@@ -50,7 +50,7 @@ const current = Astro.url.pathname;
         href="https://discord.com/invite/XCUja4Q"
         target="_blank"
         rel="noopener noreferrer"
-        class="btn-primary text-xs py-2 px-4"
+        class="btn-primary text-xs py-2 px-4 hidden sm:inline-flex"
       >
         Discord
         <Icon name="external-link" size={12} />
@@ -62,7 +62,7 @@ const current = Astro.url.pathname;
         aria-label="Open menu"
         aria-expanded="false"
         aria-controls="nav-mobile"
-        class="md:hidden flex flex-col justify-center items-center w-9 h-9 rounded border border-border bg-bg-surface hover:border-accent/30 transition-colors duration-200"
+        class="lg:hidden flex flex-col justify-center items-center w-9 h-9 rounded border border-border bg-bg-surface hover:border-accent/30 transition-colors duration-200"
       >
         <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-[transform,opacity] duration-200 origin-center"></span>
         <span class="hamburger-bar block w-4 h-px bg-text-secondary transition-[transform,opacity] duration-200 mt-1.5"></span>
@@ -75,7 +75,7 @@ const current = Astro.url.pathname;
   <!-- Mobile dropdown -->
   <div
     id="nav-mobile"
-    class="md:hidden hidden border-t border-border bg-bg-base"
+    class="lg:hidden hidden border-t border-border bg-bg-base"
     role="navigation"
     aria-label="Mobile navigation"
   >
@@ -95,6 +95,17 @@ const current = Astro.url.pathname;
           </a>
         </li>
       ))}
+      <li class="sm:hidden pt-2 mt-1 border-t border-border">
+        <a
+          href="https://discord.com/invite/XCUja4Q"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-mono text-sm px-3 py-2.5 rounded flex items-center gap-2 text-accent-text hover:text-accent transition-colors duration-200"
+        >
+          Discord
+          <Icon name="external-link" size={12} />
+        </a>
+      </li>
     </ul>
   </div>
 </header>

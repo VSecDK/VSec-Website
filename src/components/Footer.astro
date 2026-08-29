@@ -11,6 +11,13 @@ const year = new Date().getFullYear();
         <span class="text-accent">[</span>VSec<span class="text-accent">]</span>
       </a>
       <p class="font-mono text-xs text-text-muted">Non-profit Danish infosec community</p>
+      <div class="flex items-center gap-3 mt-1">
+        <a href="/security-policy" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200">Security</a>
+        <span class="text-text-muted text-xs">&middot;</span>
+        <a href="/privacy" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200">Privacy</a>
+        <span class="text-text-muted text-xs">&middot;</span>
+        <a href="/about#code-of-conduct" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200">Code of conduct</a>
+      </div>
     </div>
 
     <div class="flex items-center gap-5">
@@ -32,17 +39,17 @@ const year = new Date().getFullYear();
       <p class="font-mono text-xs text-text-muted">© {year} VSec</p>
       <div class="flex items-center gap-3">
         <a href="/rss/posts.xml" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200 flex items-center gap-1" title="Posts RSS feed">
-          <Icon name="rss" size={11} class="text-orange-400" />
+          <Icon name="rss" size={11} class="text-sev-orange" />
           Posts
         </a>
-        <span class="text-border text-xs">·</span>
+        <span class="text-text-muted text-xs">·</span>
         <a href="/rss/incidents.xml" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200 flex items-center gap-1" title="Incidents RSS feed">
-          <Icon name="rss" size={11} class="text-orange-400" />
+          <Icon name="rss" size={11} class="text-sev-orange" />
           Incidents
         </a>
-        <span class="text-border text-xs">·</span>
+        <span class="text-text-muted text-xs">·</span>
         <a href="/rss/events.xml" class="font-mono text-[10px] text-text-muted hover:text-accent transition-colors duration-200 flex items-center gap-1" title="Events RSS feed">
-          <Icon name="rss" size={11} class="text-orange-400" />
+          <Icon name="rss" size={11} class="text-sev-orange" />
           Events
         </a>
       </div>

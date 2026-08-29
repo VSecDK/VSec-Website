@@ -18,11 +18,11 @@ const uid = `sf-${listId}`;
       placeholder={placeholder}
       autocomplete="off"
       aria-label={placeholder}
-      class="w-full font-mono text-sm bg-bg-elevated border border-border rounded-lg px-4 py-2.5 pl-9 pr-10 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors duration-200"
+      class="w-full font-mono text-sm bg-bg-elevated border border-border-strong rounded-lg px-4 py-2.5 pl-9 pr-10 text-text-primary placeholder:text-text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent focus:border-accent transition-colors duration-200"
     />
     <button
       id={`${uid}-clear`}
-      class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-text-muted hover:text-text-primary transition-colors duration-150 hidden"
+      class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-text-muted hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded transition-colors duration-150 hidden"
       aria-label="Clear search"
     >✕</button>
   </div>
