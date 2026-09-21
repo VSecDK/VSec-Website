@@ -1,9 +1,36 @@
 ---
+/**
+ * Text search, and optionally one row of single-select chips per filter group.
+ *
+ * Items opt in with `data-search-text` (lowercased haystack) and, for the
+ * chips, `data-search-tags` (comma-separated, lowercased). Pages that pass no
+ * `filters` keep the plain search box they had before.
+ *
+ * An item carrying `data-unavailable` is never shown and never counted — the
+ * jobs page uses it to retire a listing that expired since the last build.
+ */
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+export interface FilterGroup {
+  /** Stable id, used for the group's chip container. */
+  id: string;
+  /** Visible group label, also the accessible group name. */
+  label: string;
+  /** Label for the "no filter" chip. */
+  allLabel?: string;
+  options: FilterOption[];
+}
+
 interface Props {
   listId: string;
   placeholder?: string;
+  filters?: FilterGroup[];
 }
-const { listId, placeholder = 'Search...' } = Astro.props;
+
+const { listId, placeholder = 'Search...', filters = [] } = Astro.props;
 const uid = `sf-${listId}`;
 ---
 
@@ -26,6 +53,36 @@ const uid = `sf-${listId}`;
       aria-label="Clear search"
     >✕</button>
   </div>
+
+  {filters.length > 0 && (
+    <div class="mt-4 flex flex-col gap-3">
+      {filters.map(group => (
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label={group.label}>
+          <span class="font-mono text-[10px] text-text-muted tracking-widest uppercase w-full sm:w-auto sm:mr-1">
+            {group.label}
+          </span>
+          <button
+            type="button"
+            class="filter-chip"
+            data-filter-group={group.id}
+            data-filter-value="all"
+            data-active="true"
+            aria-pressed="true"
+          >{group.allLabel ?? 'All'}</button>
+          {group.options.map(option => (
+            <button
+              type="button"
+              class="filter-chip"
+              data-filter-group={group.id}
+              data-filter-value={option.value}
+              data-active="false"
+              aria-pressed="false"
+            >{option.label}</button>
+          ))}
+        </div>
+      ))}
+    </div>
+  )}
 </div>
 
 <script>
@@ -37,11 +94,28 @@ const uid = `sf-${listId}`;
     const list = document.getElementById(listId);
     if (!list || !input || !clearBtn) return;
 
+    const chips = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-filter-group]'));
+    const selected = new Map<string, string>();
+    chips.forEach(chip => selected.set(chip.dataset.filterGroup!, 'all'));
+
     const emptyMsg = document.createElement('p');
     emptyMsg.className = 'font-mono text-sm text-text-muted text-center py-12';
     emptyMsg.textContent = 'No results found.';
     emptyMsg.style.display = 'none';
     list.after(emptyMsg);
+
+    function matchesChips(item: HTMLElement): boolean {
+      if (selected.size === 0) return true;
+      const tags = (item.getAttribute('data-search-tags') || '')
+        .toLowerCase()
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+      for (const value of selected.values()) {
+        if (value !== 'all' && !tags.includes(value)) return false;
+      }
+      return true;
+    }
 
     function applyFilter() {
       const query = input!.value.trim().toLowerCase();
@@ -49,8 +123,10 @@ const uid = `sf-${listId}`;
       let visibleCount = 0;
 
       items.forEach(item => {
+        // A listing retired client-side stays hidden whatever the filters say.
+        const available = !item.hasAttribute('data-unavailable');
         const text = (item.getAttribute('data-search-text') || '').toLowerCase();
-        const show = !query || text.includes(query);
+        const show = available && (!query || text.includes(query)) && matchesChips(item);
         item.style.display = show ? '' : 'none';
         if (show) visibleCount++;
       });
@@ -63,14 +139,34 @@ const uid = `sf-${listId}`;
 
       emptyMsg.style.display = visibleCount === 0 ? '' : 'none';
       clearBtn!.classList.toggle('hidden', !query);
+      container.dispatchEvent(new CustomEvent('searchfilter:change', { detail: { visible: visibleCount } }));
     }
 
     input.addEventListener('input', applyFilter);
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const group = chip.dataset.filterGroup!;
+        const value = chip.dataset.filterValue!;
+        selected.set(group, selected.get(group) === value ? 'all' : value);
+        chips
+          .filter(other => other.dataset.filterGroup === group)
+          .forEach(other => {
+            const active = other.dataset.filterValue === selected.get(group);
+            other.dataset.active = String(active);
+            other.setAttribute('aria-pressed', String(active));
+          });
+        applyFilter();
+      });
+    });
 
     clearBtn.addEventListener('click', () => {
       input!.value = '';
       applyFilter();
       input!.focus();
     });
+
+    // Lets a page re-run filtering after it marks items unavailable.
+    container.addEventListener('searchfilter:refresh', () => applyFilter());
   });
 </script>

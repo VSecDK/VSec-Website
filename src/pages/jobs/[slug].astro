@@ -1,0 +1,189 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { renderMarkdown } from '../../lib/markdown';
+import {
+  JOB_CATEGORY_CONFIG,
+  JOB_EMPLOYMENT_CONFIG,
+  JOB_LEVEL_CONFIG,
+  JOB_WORK_MODE_CONFIG,
+  effectiveClosingDate,
+  isoDay,
+} from '../../lib/job-types';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('jobs');
+  return entries.map(entry => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const job = entry.data;
+
+const closing = effectiveClosingDate(job.postedAt, job.closesAt);
+const closingDay = isoDay(closing);
+const isClosed = closingDay < isoDay(new Date());
+
+// The body is community- or bot-supplied markdown. renderMarkdown() drops raw
+// HTML and allowlists URL schemes, so an advert pasted from a feed cannot
+// inject markup.
+const body = entry.body?.trim() ? renderMarkdown(entry.body) : '';
+
+const dateFormat: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+
+const SCHEMA_EMPLOYMENT_TYPE: Record<string, string> = {
+  'full-time': 'FULL_TIME',
+  'part-time': 'PART_TIME',
+  contract: 'CONTRACTOR',
+  internship: 'INTERN',
+  'student-job': 'PART_TIME',
+};
+
+// schema.org JobPosting. Google and the Danish job aggregators read this, which
+// is most of the point of hosting a listing page rather than only a link.
+const jobPosting = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: job.title,
+  description: job.description,
+  datePosted: isoDay(job.postedAt),
+  validThrough: closingDay,
+  employmentType: SCHEMA_EMPLOYMENT_TYPE[job.employment] ?? 'OTHER',
+  hiringOrganization: { '@type': 'Organization', name: job.company },
+  jobLocation: {
+    '@type': 'Place',
+    address: { '@type': 'PostalAddress', addressLocality: job.location, addressCountry: 'DK' },
+  },
+  ...(job.workMode === 'remote' ? { jobLocationType: 'TELECOMMUTE' } : {}),
+  directApply: false,
+  url: new URL(`/jobs/${entry.id}`, 'https://vsec.dk').toString(),
+};
+
+/**
+ * `</script>` inside any string value would end the data block early and turn
+ * the rest of the JSON into markup. Escaping the angle brackets keeps the
+ * payload valid JSON while making that impossible.
+ */
+// [Security] Escape < and & in a JSON data block — prevents breaking out of <script> (CWE-79)
+const jobPostingJson = JSON.stringify(jobPosting)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026');
+---
+
+<Layout
+  title={`${job.title} — ${job.company}`}
+  description={job.description}
+  type="article"
+  publishedTime={job.postedAt}
+>
+  <script type="application/ld+json" set:html={jobPostingJson} />
+
+  <div class="max-w-4xl mx-auto px-6 py-16">
+
+    <a href="/jobs" class="font-mono text-xs text-text-muted hover:text-accent transition-colors duration-200">
+      ← All jobs
+    </a>
+
+    <div class="mt-6 mb-8">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class:list={['tag text-[10px] py-0', JOB_CATEGORY_CONFIG[job.category].style]}>
+          {JOB_CATEGORY_CONFIG[job.category].label}
+        </span>
+        <span class="font-mono text-[10px] text-text-muted tracking-wider uppercase">
+          {JOB_LEVEL_CONFIG[job.level].label}
+        </span>
+        {isClosed && (
+          <span class="font-mono text-[10px] text-sev-orange border border-sev-orange/30 bg-sev-orange/5 rounded px-2 py-0.5 tracking-wider uppercase">
+            Closed
+          </span>
+        )}
+      </div>
+
+      <h1 class="font-mono font-bold text-2xl sm:text-3xl text-text-primary" lang={job.lang}>{job.title}</h1>
+      <p class="font-mono text-text-secondary mt-1">{job.company}</p>
+    </div>
+
+    {isClosed && (
+      <div class="mb-8 p-4 rounded-lg border border-dashed border-border">
+        <p class="font-mono text-sm text-text-secondary">
+          This listing closed on {closing.toLocaleDateString('en-GB', dateFormat)}. The advert may no longer be live.
+        </p>
+      </div>
+    )}
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="md:col-span-2 order-2 md:order-1">
+        <p class="font-sans text-text-secondary leading-relaxed" lang={job.lang}>{job.description}</p>
+
+        {body && (
+          <div
+            class="prose prose-invert max-w-none mt-6 font-sans"
+            lang={job.lang}
+            set:html={body}
+          />
+        )}
+
+        <p class="font-mono text-xs text-text-muted mt-10 leading-relaxed">
+          VSec is not the employer and takes no part in hiring. Listings are curated by the
+          community; apply directly with the company and verify the advert yourself.
+          {job.sourceUrl && (
+            <>
+              {' '}Read from <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer nofollow" class="text-accent-text hover:text-accent">the original advert</a>.
+            </>
+          )}
+        </p>
+      </div>
+
+      <aside class="md:col-span-1 order-1 md:order-2">
+        <div class="card">
+          <dl class="flex flex-col gap-4">
+            <div>
+              <dt class="font-mono text-[10px] text-text-muted tracking-widest uppercase">Location</dt>
+              <dd class="font-mono text-sm text-text-primary mt-0.5">{job.location}</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[10px] text-text-muted tracking-widest uppercase">Work</dt>
+              <dd class="font-mono text-sm text-text-primary mt-0.5">
+                {JOB_WORK_MODE_CONFIG[job.workMode].label} · {JOB_EMPLOYMENT_CONFIG[job.employment].label}
+              </dd>
+            </div>
+            {job.salary && (
+              <div>
+                <dt class="font-mono text-[10px] text-text-muted tracking-widest uppercase">Salary</dt>
+                <dd class="font-mono text-sm text-text-primary mt-0.5" lang={job.lang}>{job.salary}</dd>
+              </div>
+            )}
+            <div>
+              <dt class="font-mono text-[10px] text-text-muted tracking-widest uppercase">Posted</dt>
+              <dd class="font-mono text-sm text-text-primary mt-0.5">
+                {job.postedAt.toLocaleDateString('en-GB', dateFormat)}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[10px] text-text-muted tracking-widest uppercase">
+                {job.closesAt ? 'Closes' : 'Expires (est.)'}
+              </dt>
+              <dd class="font-mono text-sm text-text-primary mt-0.5">
+                {closing.toLocaleDateString('en-GB', dateFormat)}
+              </dd>
+            </div>
+          </dl>
+
+          <a
+            href={job.applyUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            class:list={['btn-primary text-sm w-full justify-center mt-6', isClosed && 'opacity-60']}
+          >
+            {isClosed ? 'View advert' : 'Apply'}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M7 17L17 7M17 7H7M17 7v10"/>
+            </svg>
+          </a>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</Layout>
