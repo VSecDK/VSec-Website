@@ -1,0 +1,27 @@
+# Template for a job listing.
+#
+# Copy this file to src/content/jobs/YYYY-MM-DD-company-role.md (the date must
+# match `postedAt`) and delete this comment block. The .example suffix keeps
+# this file out of the content glob — never leave a placeholder listing in the
+# collection, it ships publicly as a real, applicable job.
+
+---
+title: "Senior Application Security Engineer"
+company: "Example A/S"
+description: "One or two sentences shown in the listing. No markup."
+location: "Copenhagen"
+category: appsec          # appsec | offensive | defensive | incident-response | cti | grc | iam | cloud | ot-ics | architecture | leadership | other
+level: senior             # student | junior | mid | senior | lead | management
+employment: full-time     # full-time | part-time | contract | internship | student-job
+workMode: hybrid          # onsite | hybrid | remote
+applyUrl: "https://example.dk/careers/appsec-engineer"
+postedAt: 2026-09-21
+closesAt: 2026-10-21      # optional — without it the listing expires 60 days after postedAt
+salary: "Efter kvalifikationer"   # optional
+source: community         # optional lowercase slug: community | it-jobbank | jobindex | …
+sourceUrl: "https://…"    # optional — the advert the listing was read from
+lang: en                  # en | da — set da for a Danish-language advert
+---
+
+Optional longer description in Markdown. Raw HTML is stripped and URL schemes
+are allowlisted, so this is safe to accept from a pull request.
