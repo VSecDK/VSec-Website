@@ -6,7 +6,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import {
-  buildListing, cleanText, listingFilename, listingFingerprint, parseDay,
+  buildListing, cleanText, escapeCell, listingFilename, listingFingerprint, parseDay,
   safeHttpsUrl, slugify, stripContactDetails, toMarkdown, toPlainText,
 } from '../src/listing.ts';
 
@@ -50,6 +50,25 @@ test('stripContactDetails removes emails and Danish phone numbers', () => {
 
 test('toPlainText unwraps HTML from a feed description', () => {
   assert.equal(toPlainText('<p>Hello <b>world</b></p>&amp;co'), 'Hello world &co');
+  assert.equal(toPlainText('caf&#233; &#x41;'), 'café A');
+});
+
+test('toPlainText decodes entities once, never twice', () => {
+  // Staged replacements would turn each of these into a real tag.
+  assert.equal(toPlainText('&amp;lt;script&amp;gt;'), '&lt;script&gt;');
+  assert.equal(toPlainText('&amp;#60;img&amp;#62;'), '&#60;img&#62;');
+  assert.equal(toPlainText('&unknownentity; stays'), '&unknownentity; stays');
+});
+
+test('escapeCell cannot be broken out of with a trailing backslash', () => {
+  assert.equal(escapeCell('a|b'), 'a\\|b');
+  // Without escaping the backslash first this yields "x\\|" — the pipe escapes
+  // the escape and the table row splits.
+  assert.equal(escapeCell('x\\'), 'x\\\\');
+  assert.equal(escapeCell('x\\|y'), 'x\\\\\\|y');
+  // A literal backslash-n in a title is escaped, not treated as a newline.
+  assert.equal(escapeCell('two\\nlines'), 'two\\\\nlines');
+  assert.equal(escapeCell('two\nlines'), 'two lines');
 });
 
 test('a crafted title cannot inject frontmatter keys', () => {

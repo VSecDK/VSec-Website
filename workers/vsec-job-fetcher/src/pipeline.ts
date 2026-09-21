@@ -8,7 +8,7 @@
 import { LIMITS, LISTING, type Env } from './env';
 import { consumeQuota } from './http';
 import { listExistingListings, openPullRequest, type ExistingListing } from './github';
-import { isoDay, listingFingerprint, listingFilename, type Listing } from './listing';
+import { escapeCell, isoDay, listingFingerprint, listingFilename, type Listing } from './listing';
 import { SOURCES, fetchSource, type JobSource } from './sources';
 
 const SNAPSHOT_KEY = 'snapshot:jobs';
@@ -213,11 +213,6 @@ export async function runFetchCycle(
 
   result.pullRequest = { url: pull.url, number: pull.number };
   return result;
-}
-
-/** Table cells are markdown in a PR body — keep a title from breaking the row. */
-function escapeCell(value: string): string {
-  return value.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 }
 
 export interface PruneResult {

@@ -76,23 +76,52 @@ export function stripContactDetails(text: string): string {
     .trim();
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+};
+
+/**
+ * Decodes HTML entities in one pass.
+ *
+ * [Security] One pass, never staged replacements — decoding `&amp;` before
+ * `&lt;` turns "&amp;lt;" into "<", a double unescape (CWE-116)
+ */
+function decodeEntities(value: string): string {
+  return value.replace(
+    /&(?:([a-z]+)|#(\d{1,6})|#x([0-9a-f]{1,6}));/gi,
+    (match: string, name?: string, decimal?: string, hex?: string): string => {
+      if (name) return NAMED_ENTITIES[name.toLowerCase()] ?? match;
+      const point = decimal ? Number.parseInt(decimal, 10) : Number.parseInt(hex ?? '', 16);
+      if (!Number.isFinite(point) || point <= 0 || point > 0x10ffff) return ' ';
+      // Lone surrogates are not scalar values and have no business in a listing.
+      if (point >= 0xd800 && point <= 0xdfff) return ' ';
+      return String.fromCodePoint(point);
+    },
+  );
+}
+
 /** Markdown/HTML noise out of a feed's description field. */
 export function toPlainText(value: string): string {
-  return value
+  // Tags first, then entities: decoding first would let an advert smuggle a
+  // tag through as "&lt;script&gt;" and have the tag stripper never see it.
+  const withoutTags = value
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/<\/(p|div|li|h[1-6])>/gi, ' ')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#(\d{1,6});/g, (_, code: string) => {
-      const point = Number.parseInt(code, 10);
-      return point > 0 && point < 0x110000 ? String.fromCodePoint(point) : ' ';
-    })
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/<[^>]*>/g, ' ');
+
+  return decodeEntities(withoutTags).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Escapes a value for a markdown table cell in a pull-request body.
+ * [Security] Escape the escape character first: a value ending in a backslash
+ * would otherwise consume the one added for the pipe (CWE-116)
+ */
+export function escapeCell(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/[\r\n]+/g, ' ');
 }
 
 /**
