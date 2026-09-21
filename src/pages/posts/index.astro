@@ -62,13 +62,13 @@ members.forEach(m => {
             <div class="flex items-center justify-between pt-2 border-t border-border">
               <div class="flex items-center gap-3">
                 <span class="font-mono text-xs text-text-muted">{post.data.author}</span>
-                <span class="text-border">·</span>
+                <span class="text-text-muted">·</span>
                 <span class="font-mono text-xs text-text-muted">
                   {post.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               </div>
               {post.data.readingTime && (
-                <span class="font-mono text-xs text-accent/60">{post.data.readingTime}</span>
+                <span class="font-mono text-xs text-accent-text">{post.data.readingTime}</span>
               )}
             </div>
           </a>

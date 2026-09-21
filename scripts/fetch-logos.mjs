@@ -9,13 +9,43 @@ import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
 const LOGOS_DIR = 'public/images/logos';
 const MANIFEST_PATH = 'src/data/logo-manifest.json';
 
+// Logo URLs arrive by pull request, so everything below treats them as untrusted:
+// only https, only image extensions, only image content types, and a size cap.
+// Without the extension allowlist a contributor could park an attacker-controlled
+// .js or .html file on the vsec.dk origin.
+// [Security] Extension + content-type allowlist prevents same-origin file drop (CWE-434, CWE-79)
+const ALLOWED_EXTENSIONS = new Map([
+  ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
+  ['.jpeg', 'image/jpeg'],
+  ['.webp', 'image/webp'],
+  ['.gif', 'image/gif'],
+  ['.ico', 'image/x-icon'],
+]);
+const ALLOWED_CONTENT_TYPES = new Set([
+  'image/png', 'image/jpeg', 'image/webp', 'image/gif',
+  'image/x-icon', 'image/vnd.microsoft.icon',
+]);
+const MAX_LOGO_BYTES = 1024 * 1024;
+const REQUEST_TIMEOUT_MS = 15_000;
+
 await mkdir(LOGOS_DIR, { recursive: true });
+
+const logosRoot = path.resolve(LOGOS_DIR);
 
 function urlToFilename(url) {
   try {
     const u = new URL(url);
-    const ext = path.extname(u.pathname) || '.ico';
+    // [Security] https only — no file:, data:, or plaintext http fetches (CWE-829)
+    if (u.protocol !== 'https:') return null;
+
+    const ext = (path.extname(u.pathname) || '.ico').toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext)) return null;
+
+    // Hostname cannot contain a path separator, so this is a single path segment.
     const hostname = u.hostname.replace(/^www\./, '');
+    if (!/^[a-z0-9.-]+$/i.test(hostname)) return null;
+
     return hostname + ext;
   } catch {
     return null;
@@ -25,9 +55,17 @@ function urlToFilename(url) {
 async function downloadLogo(url) {
   if (!url || url.startsWith('/')) return url; // already local
   const filename = urlToFilename(url);
-  if (!filename) return null;
+  if (!filename) {
+    console.log(`  reject ${url} (not an https image URL with an allowed extension)`);
+    return null;
+  }
 
   const filePath = path.join(LOGOS_DIR, filename);
+  // [Security] Defence in depth: resolved path must stay inside LOGOS_DIR (CWE-22)
+  if (path.dirname(path.resolve(filePath)) !== logosRoot) {
+    console.log(`  reject ${url} (path escapes ${LOGOS_DIR})`);
+    return null;
+  }
   const localPath = `/images/logos/${filename}`;
 
   if (fs.existsSync(filePath)) {
@@ -35,9 +73,26 @@ async function downloadLogo(url) {
   }
 
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'VSec-Website-Build' } });
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'VSec-Website-Build' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
     if (!res.ok) { console.log(`  fail  ${url} (${res.status})`); return null; }
+
+    const type = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
+    if (!ALLOWED_CONTENT_TYPES.has(type)) {
+      console.log(`  reject ${url} (content-type ${type || 'none'})`);
+      return null;
+    }
+
     const buf = await res.arrayBuffer();
+    // [Security] Bound the write so a hostile origin cannot fill the build disk (CWE-400)
+    if (buf.byteLength > MAX_LOGO_BYTES) {
+      console.log(`  reject ${url} (${buf.byteLength} bytes exceeds cap)`);
+      return null;
+    }
+
     fs.writeFileSync(filePath, Buffer.from(buf));
     console.log(`  ok    ${url}`);
     return localPath;
@@ -56,7 +111,7 @@ async function collectLogosFromDir(dir, manifest) {
     if (!file.endsWith('.md')) continue;
     const content = await readFile(path.join(dir, file), 'utf8');
 
-    const match = content.match(/^logo:\s*["']?(https?:\/\/[^\s"'\r\n]+)["']?/m);
+    const match = content.match(/^logo:\s*["']?(https:\/\/[^\s"'\r\n]+)["']?/m);
     if (!match) continue;
 
     const url = match[1];

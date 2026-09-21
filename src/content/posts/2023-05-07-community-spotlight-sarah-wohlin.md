@@ -5,6 +5,7 @@ author: Kristian Bodeholt
 date: 2023-05-07
 tags: ["Member", "Community"]
 readingTime: "4 min"
+cover: "../../assets/posts/sarah-wohlin.jpg"
 ---
 
 ***This is the fourth community spotlight, in a series of articles highlighting the awesome people that take part in the local Danish non-profit Infosec communities/organisations in Denmark.***
@@ -14,7 +15,7 @@ At the age of 24, my interest in technology started when I first played Mario Ka
 
 I initially pursued my degree in Computer Science at UCN in Aalborg, with the intention of developing video games. However, I quickly realized that the job market for video game developers in Denmark was scarce, so that didn't seem like an option. As I completed more exams, I gradually realized that being a software developer wasn't my passion, and that regular developer jobs just weren't my thing. After I graduated, I found myself unsure of what my next move should be, so I decided to attend some events to explore my options and find something that truly sparked my passion. Even though attending a Digital Forensics workshop with NC3 could have been just another experience, it was a pivotal moment for me. I felt like something just clicked and immediately applied to the IT-security bachelor program at UCN. I just knew it was the perfect fit, and that it was this field I was meant to dive into. As a result, I now work as a Cyber Security Consultant at Trifork Security, where I mainly focus on Vulnerability Management, EDR and Threat Hunting.
 
-![Sarah Wohlin](/images/posts/sarah-wohlin.jpg)
+![Sarah Wohlin](../../assets/posts/sarah-wohlin.jpg)
 
 ## How is it to be a woman in the Danish information security community and do you have any advice for other females that are holding back to join?
 As a (very) new member and a woman in the Danish information security community, I have been pleasantly surprised by how welcoming and inclusive the environment has been. While there is still some room for improvement in terms of diversity and representation, I have not personally encountered any major obstacles or discrimination. My advice to other women who are interested in joining the community is to not let the lack of representation discourage them, and to just give it a go. If we don't do something about the lack of representation, things won't get any better and we need to take action to make a change.

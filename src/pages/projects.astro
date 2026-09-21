@@ -1,45 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getOrgRepos, type GithubRepo } from '../lib/github';
 
-// Fetch all repos from the VSecDK GitHub organisation at build time
-type GithubRepo = {
-  id: number;
-  name: string;
-  full_name: string;
-  description: string | null;
-  html_url: string;
-  pushed_at: string;
-  updated_at: string;
-  topics: string[];
-  stargazers_count: number;
-  fork: boolean;
-  archived: boolean;
-  visibility: string;
-};
-
-let repos: GithubRepo[] = [];
-let fetchError = false;
-
-try {
-  const res = await fetch(
-    'https://api.github.com/orgs/VSecDK/repos?per_page=100&sort=pushed&type=public',
-    { headers: { 'Accept': 'application/vnd.github+json' } }
-  );
-  if (res.ok) {
-    const data = await res.json() as GithubRepo[];
-    // Sort: non-forks and non-archived first, then most recently pushed
-    repos = data
-      .filter(r => r.visibility === 'public' && !r.archived)
-      .sort((a, b) => {
-        if (a.fork !== b.fork) return a.fork ? 1 : -1;
-        return new Date(b.pushed_at).valueOf() - new Date(a.pushed_at).valueOf();
-      });
-  } else {
-    fetchError = true;
-  }
-} catch {
-  fetchError = true;
-}
+// Repos come from the shared build-time helper so this page and the homepage
+// make one request between them and both honour GITHUB_TOKEN.
+const repoResult = await getOrgRepos();
+const repos = repoResult.ok ? repoResult.repos : [];
+const fetchError = !repoResult.ok;
 
 const oneYearAgo = new Date();
 oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -54,12 +21,12 @@ function formatDate(iso: string) {
   });
 }
 
-const activeCount  = repos.filter(r => !r.archived && new Date(r.pushed_at) >= oneYearAgo).length;
-const passiveCount = repos.filter(r => !r.archived && new Date(r.pushed_at) < oneYearAgo).length;
+const activeCount  = repos.filter(r => new Date(r.pushed_at) >= oneYearAgo).length;
+const passiveCount = repos.filter(r => new Date(r.pushed_at) <  oneYearAgo).length;
 
 const statusStyle: Record<string, string> = {
   active:   'text-accent border-accent/20 bg-accent/5',
-  inactive: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5',
+  inactive: 'text-sev-amber border-sev-amber/30 bg-sev-amber/5',
 };
 ---
 
@@ -72,7 +39,7 @@ const statusStyle: Record<string, string> = {
         <h1 class="font-mono font-bold text-2xl sm:text-3xl md:text-4xl text-text-primary mb-2">Projects</h1>
         <p class="font-sans text-text-secondary">
           All public repositories from
-          <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="text-accent/70 hover:text-accent transition-colors">github.com/VSecDK</a>.
+          <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="text-accent-text hover:text-accent transition-colors">github.com/VSecDK</a>.
           Repos with no activity for over a year are marked as inactive.
         </p>
       </div>
@@ -83,7 +50,7 @@ const statusStyle: Record<string, string> = {
             <p class="font-mono text-xs text-text-muted">active</p>
           </div>
           <div>
-            <p class="font-mono font-bold text-3xl text-yellow-400/80">{passiveCount}</p>
+            <p class="font-mono font-bold text-3xl text-sev-amber">{passiveCount}</p>
             <p class="font-mono text-xs text-text-muted">inactive</p>
           </div>
         </div>
@@ -143,7 +110,7 @@ const statusStyle: Record<string, string> = {
                 </span>
                 {repo.stargazers_count > 0 && (
                   <span class="font-mono text-xs text-text-muted flex items-center gap-1">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400/60">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" class="text-sev-amber">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                     {repo.stargazers_count}

@@ -13,14 +13,15 @@ interface Props {
   website?: string;
   ctftime?: string;
   roles: string[];
-  verified: boolean;
+  /** Retained for callers/schema parity; every member is verified, so no per-card badge is drawn. */
+  verified?: boolean;
   featured: boolean;
 }
 
 const {
   name, handle, bio, avatar, discordAvatar,
   github, twitter, linkedin, website, ctftime,
-  roles, verified, featured,
+  roles, featured,
 } = Astro.props;
 
 // Avatar priority: discord (bot-filled) → manual → github (local) → initials
@@ -34,8 +35,8 @@ const socials = [
   github    && { href: `https://github.com/${github}`,        label: 'GitHub',   icon: 'github' },
   twitter   && { href: `https://twitter.com/${twitter}`,      label: 'Twitter',  icon: 'twitter' },
   linkedin  && { href: `https://linkedin.com/in/${linkedin}`,  label: 'LinkedIn', icon: 'linkedin' },
-  website   && { href: website.startsWith('http') ? website : `https://${website}`, label: 'Website', icon: 'website' },
-  ctftime   && { href: ctftime.startsWith('http') ? ctftime : `https://ctftime.org/user/${ctftime}`, label: 'CTFtime', icon: 'ctftime' },
+  website   && { href: website,                                       label: 'Website',  icon: 'website' },
+  ctftime   && { href: `https://ctftime.org/user/${ctftime}`,         label: 'CTFtime',  icon: 'ctftime' },
 ].filter(Boolean) as { href: string; label: string; icon: string }[];
 ---
 
@@ -70,9 +71,6 @@ const socials = [
     <div class="mb-1">
       <div class="flex items-center gap-1.5 flex-wrap">
         <span class="font-mono font-semibold text-sm text-text-primary">{name}</span>
-        {verified && (
-          <Icon name="verified" size={14} class="text-accent flex-shrink-0" role="img" aria-label="Verified member" />
-        )}
       </div>
       <span class="font-mono text-xs text-text-muted">@{handle}</span>
     </div>

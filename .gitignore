@@ -11,3 +11,5 @@ screenshot.mjs
 serve.mjs
 temporary screenshots/
 AGENTS.md
+# Generated at build time (RFC 9116 Expires must stay in the future)
+public/.well-known/

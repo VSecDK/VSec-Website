@@ -5,6 +5,7 @@ author: Sarah Wohlin
 date: 2024-02-29
 tags: ["Member", "Community"]
 readingTime: "5 min"
+cover: "../../assets/posts/lars-bo-frydenskov.jpg"
 ---
 
 ***This is the fifth community spotlight, in a series of articles highlighting the awesome people that take part in the local Danish non-profit Infosec communities/organisations in Denmark.***
@@ -16,7 +17,7 @@ After the completion of the first tasks, I got hooked, and used all my waking ho
 
 My professional life in cybersecurity started when I got hired by Aalborg University(AAU) as a research assistant, where I worked in close cooperation with Danny Bøgsted Poulsen on the static analysis tool MiniMC, and Rene Rydhof Hansen on the tech transfer project SB3D. My time at AAU was a time of application security, which changed drastically when I started my cyber security consultant role at Trifork Security. Today, my work day is characterised by operational security, where I specialise in offensive security(OffSec), Endpoint Detection and Response(EDR) and Vulnerability Management(VM). Most of my energy is used in consulting and assessments.
 
-![Lars Bo Frydenskov](/images/posts/lars-bo-frydenskov.jpg)
+![Lars Bo Frydenskov](../../assets/posts/lars-bo-frydenskov.jpg)
 
 ## If you should give any advice to yourself when starting your infosec journey, what would it be?
 I always had this picture of hackers, the darknet and security professionals as something mythological. Partly, because of imposter syndrome and because of a false expectation of the field, I avoided the cyber security path for many years.

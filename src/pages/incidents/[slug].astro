@@ -2,28 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import IncidentTimeline from '../../components/IncidentTimeline.astro';
 import { getCollection } from 'astro:content';
-import { marked } from 'marked';
+import { renderMarkdown } from '../../lib/markdown';
+import { getIncidentTypeConfig } from '../../lib/incident-types';
 
-type TypeConfig = { label: string; style: string };
-const typeConfig: Record<string, TypeConfig> = {
-  ransomware:      { label: 'Ransomware',   style: 'text-red-400/80 border-red-400/20 bg-red-400/5' },
-  dataleak:        { label: 'Data Leak',    style: 'text-orange-400/80 border-orange-400/20 bg-orange-400/5' },
-  hacking:         { label: 'Hacking',      style: 'text-yellow-400/80 border-yellow-400/20 bg-yellow-400/5' },
-  'supply-chain':  { label: 'Supply chain', style: 'text-purple-400/80 border-purple-400/20 bg-purple-400/5' },
-  unknown:         { label: 'Unknown',      style: 'text-text-muted border-border bg-white/4' },
-};
-
-function getTypeConfig(t: string): TypeConfig {
-  return typeConfig[t.toLowerCase()] ?? {
-    label: t.charAt(0).toUpperCase() + t.slice(1),
-    style: 'text-accent/80 border-accent/20 bg-accent/5',
-  };
-}
 
 // Strip markdown links and bare URLs from text
 function stripLinks(s: string): string {
   return s
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)/g, '$1')
     .replace(/https?:\/\/\S+/g, '')
     .trim();
 }
@@ -34,7 +20,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const tc = getTypeConfig(entry.data.type);
+const tc = getIncidentTypeConfig(entry.data.type);
 const title = `${tc.label} – ${entry.data.company}`;
 
 // Extract a named section from the raw markdown body
@@ -54,35 +40,42 @@ const indicators   = extractSection(body, 'Indicators of Compromise');
 const detection    = extractSection(body, 'Detection Rules');
 const references   = extractSection(body, 'References');
 
-// Strip dangerous HTML constructs after marked parsing (XSS protection)
-function sanitizeHtml(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[^>]*>/gi, '')
-    .replace(/(<[^>]+)\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '$1')
-    .replace(/href\s*=\s*["']?\s*javascript:/gi, 'href="#"');
-}
-
-// Render markdown to HTML
+// Render markdown to HTML. renderMarkdown() drops raw HTML and allowlists URL
+// schemes, so case files contributed by pull request cannot inject markup.
 function md(text: string, keepLinks = false): string {
   if (!text || text.toLowerCase() === 'tbd' || text.toLowerCase() === 'unknown') return '';
-  const cleaned = keepLinks ? text : stripLinks(text);
-  return sanitizeHtml(marked.parse(cleaned) as string);
+  return renderMarkdown(keepLinks ? text : stripLinks(text));
 }
 
 // Render references section: convert bare URLs to links
 function renderReferences(text: string): string {
   if (!text || text.toLowerCase() === 'tbd' || text.toLowerCase() === 'unknown') return '';
   const withLinks = text.replace(/^(https?:\/\/\S+)/gm, (url) => `- [${url}](${url})`);
-  return sanitizeHtml(marked.parse(withLinks) as string);
+  return renderMarkdown(withLinks);
 }
 
 const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+// The meta description took a raw slice of the markdown body, so any markup or
+// markdown syntax in the source leaked into <meta content="...">. Flatten it to
+// plain prose first.
+function toPlainText(markdown: string): string {
+  return markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`>#]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const plainDescription = toPlainText(description);
+const metaDescription = `${tc.label} incident: ${entry.data.company}.` +
+  (plainDescription ? ` ${plainDescription.slice(0, 150).trim()}${plainDescription.length > 150 ? '…' : ''}` : '');
 ---
 
-<Layout title={`${entry.data.company} – ${tc.label} | Incidents`} description={`${tc.label} incident: ${entry.data.company}. ${description.slice(0, 120)}`}>
+<Layout title={`${entry.data.company} – ${tc.label} | Incidents`} description={metaDescription}>
 
   <div class="max-w-6xl mx-auto px-6 py-16">
 
@@ -137,7 +130,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {description && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             Description
           </h2>
           <div class="prose-cti max-w-3xl" set:html={md(description)} />
@@ -147,7 +140,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {timeline && timeline.toLowerCase() !== 'tbd' && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-6 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             Timeline
           </h2>
           <IncidentTimeline timeline={timeline} />
@@ -157,7 +150,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {advisor && advisor.toLowerCase() !== 'tbd' && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             Security Advisory
           </h2>
           <div class="prose-cti max-w-3xl" set:html={md(advisor)} />
@@ -167,7 +160,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {indicators && indicators.toLowerCase() !== 'unknown' && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             Indicators of Compromise (IOC)
           </h2>
           <div class="prose-cti font-mono text-sm" set:html={md(indicators, true)} />
@@ -177,7 +170,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {detection && detection.toLowerCase() !== 'unknown' && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             Detection Rules (Yara/Sigma)
           </h2>
           <div class="prose-cti font-mono text-sm" set:html={md(detection, true)} />
@@ -187,7 +180,7 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
       {references && references.toLowerCase() !== 'tbd' && references.toLowerCase() !== 'unknown' && (
         <section>
           <h2 class="font-mono font-semibold text-text-primary mb-4 flex items-center gap-3">
-            <span class="text-accent/60 text-sm">##</span>
+            <span class="text-accent-text text-sm">##</span>
             References
           </h2>
           <div class="prose-cti max-w-3xl" set:html={renderReferences(references)} />
@@ -237,13 +230,13 @@ const dateStr = entry.data.date.toLocaleDateString('en-GB', { day: 'numeric', mo
     @apply list-decimal;
   }
   .prose-cti a {
-    @apply text-accent/70 hover:text-accent underline underline-offset-2 transition-colors break-all;
+    @apply text-accent-text hover:text-accent underline underline-offset-2 transition-colors break-all;
   }
   .prose-cti strong {
     @apply text-text-primary font-semibold;
   }
   .prose-cti code {
-    @apply font-mono text-accent/80 bg-accent/5 px-1 py-0.5 rounded text-xs;
+    @apply font-mono text-accent-text bg-accent/5 px-1 py-0.5 rounded text-xs;
   }
   .prose-cti pre {
     @apply bg-bg-surface border border-border rounded-lg p-4 overflow-x-auto mb-3;

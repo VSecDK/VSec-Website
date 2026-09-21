@@ -89,11 +89,11 @@ const sortedGroups = order
 
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
-                    <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200 truncate">
+                    <h3 class="font-mono font-semibold text-sm text-text-primary group-hover:text-accent transition-colors duration-200 truncate min-w-0">
                       {c.data.name}
                     </h3>
                     {c.data.featured && (
-                      <span class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono rounded border border-accent/20 bg-accent/5 text-accent/70 leading-none">
+                      <span class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono rounded border border-accent/20 bg-accent/5 text-accent-text leading-none">
                         featured
                       </span>
                     )}
@@ -118,7 +118,7 @@ const sortedGroups = order
     <div class="mt-16 p-8 rounded-lg border border-dashed border-border text-center">
       <p class="font-mono text-sm text-text-primary mb-1">Know a community that's missing?</p>
       <p class="font-sans text-xs text-text-muted mb-5">
-        Create a new markdown file in <code class="font-mono text-accent/70">src/content/communities/</code> and open a pull request.
+        Create a new markdown file in <code class="font-mono text-accent-text">src/content/communities/</code> and open a pull request.
       </p>
       <a href="https://github.com/VSecDK" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">
         Contribute on GitHub
