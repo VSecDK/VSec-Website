@@ -1,5 +1,5 @@
 ---
-name: Simon B. Laursen
+name: Simon Borgbjerg Laursen
 handle: simlau
 bio: "Software Engineer & Security Architect @ Freelance"
 roles: ["Verified"]
