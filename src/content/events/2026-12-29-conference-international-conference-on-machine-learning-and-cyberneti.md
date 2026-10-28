@@ -1,0 +1,10 @@
+---
+title: "International Conference on Machine Learning and Cybernetics"
+description: "En international konference om maskinlæring og kybernetik, hvor eksperter kan dele deres viden og erfaringer."
+date: 2026-12-29
+location: "Danmark"
+type: "conference"
+link: "https://www.allconferencealert.com/denmark"
+---
+
+En international konference om maskinlæring og kybernetik, hvor eksperter kan dele deres viden og erfaringer.
