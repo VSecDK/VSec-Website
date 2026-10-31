@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import MemberCard from '../components/MemberCard.astro';
 import { getIncidentTypeConfig } from '../lib/incident-types';
+import { JOB_CATEGORY_CONFIG, effectiveClosingDate, isoDay } from '../lib/job-types';
 import { getOrgRepos } from '../lib/github';
 
 
@@ -16,6 +17,15 @@ const events = (await getCollection('events'))
   .filter(e => e.data.date.toISOString().slice(0, 10) >= todayStr)
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf())
   .slice(0, 2);
+
+// Open listings only — an expired advert on the front page is worse than none.
+// Same UTC comparison as above; /jobs refines it against the visitor's clock.
+const openJobs = (await getCollection('jobs'))
+  .filter(j => isoDay(effectiveClosingDate(j.data.postedAt, j.data.closesAt)) >= todayStr)
+  .sort((a, b) =>
+    Number(b.data.featured) - Number(a.data.featured) ||
+    b.data.postedAt.valueOf() - a.data.postedAt.valueOf())
+  .slice(0, 3);
 
 const tierOrder = { gold: 0, silver: 1, bronze: 2 } as const;
 const tierStyle = {
@@ -343,6 +353,44 @@ const stats = [
       </div>
     </div>
   </section>
+
+  <!-- Open jobs -->
+  {openJobs.length > 0 && (
+    <section class="border-t border-border">
+      <div class="max-w-6xl mx-auto px-6 py-20">
+        <div class="flex items-end justify-between mb-10">
+          <div>
+            <p class="section-label">// Careers</p>
+            <h2 class="font-mono font-bold text-2xl text-text-primary">Security jobs in Denmark</h2>
+          </div>
+          <a href="/jobs" class="font-mono text-sm text-accent-text hover:text-accent transition-colors duration-200">
+            All jobs →
+          </a>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          {openJobs.map(job => (
+            <a href={`/jobs/${job.id}`} class="card group flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-3 mb-1">
+                  <span class:list={['tag text-[10px] py-0', JOB_CATEGORY_CONFIG[job.data.category].style]}>
+                    {JOB_CATEGORY_CONFIG[job.data.category].label}
+                  </span>
+                  <span class="font-mono text-xs text-text-muted">{job.data.location}</span>
+                </div>
+                <h3
+                  class="font-mono font-semibold text-text-primary group-hover:text-accent transition-colors duration-200"
+                  lang={job.data.lang}
+                >{job.data.title}</h3>
+                <p class="font-mono text-sm text-text-secondary mt-0.5">{job.data.company}</p>
+              </div>
+              <span class="btn-ghost text-xs flex-shrink-0 pointer-events-none">View role</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- Latest incidents -->
   <section class="border-t border-border">

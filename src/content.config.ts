@@ -2,6 +2,12 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { INCIDENT_TYPES } from './lib/incident-types';
+import {
+  JOB_CATEGORIES,
+  JOB_EMPLOYMENTS,
+  JOB_LEVELS,
+  JOB_WORK_MODES,
+} from './lib/job-types';
 
 /**
  * Content under src/content/ arrives by pull request, so schemas are the first
@@ -141,6 +147,56 @@ const learning = defineCollection({
   }),
 });
 
+
+/**
+ * Job listings.
+ *
+ * Entries arrive two ways and both are pull requests: a human adds a file, or
+ * the `vsec-job-fetcher` Worker opens a PR with what it found in public job
+ * feeds. Nothing publishes without review, so this schema is the trust
+ * boundary for machine-generated content as much as for human content.
+ *
+ * Free-text fields are length-capped: a job advert copied from a feed can carry
+ * a whole page of prose, and an unbounded `title` renders into the page, the
+ * RSS feed and the JobPosting JSON-LD.
+ */
+const jobs = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/jobs' }),
+  schema: z.object({
+    title: z.string().min(2).max(160),
+    company: z.string().min(1).max(120),
+    description: z.string().min(1).max(600),
+    // Free text so "Copenhagen", "Aarhus / hybrid" and "Denmark (remote)" all fit.
+    location: z.string().min(1).max(120),
+    category: z.enum(JOB_CATEGORIES),
+    level: z.enum(JOB_LEVELS),
+    employment: z.enum(JOB_EMPLOYMENTS).default('full-time'),
+    workMode: z.enum(JOB_WORK_MODES).default('onsite'),
+    // Where a candidate applies. Rendered as an href, so scheme-allowlisted.
+    applyUrl: webUrl,
+    postedAt: z.coerce.date(),
+    // Optional. Without it the listing expires DEFAULT_LISTING_DAYS after postedAt.
+    closesAt: z.coerce.date().optional(),
+    // Deliberately a string: Danish adverts quote ranges, "efter kvalifikationer",
+    // or nothing at all. Never parsed, only displayed.
+    salary: z.string().max(120).optional(),
+    // Provenance. `source` is a short label ("it-jobbank", "community"), and
+    // sourceUrl points at the advert the fetcher read.
+    source: z.string().max(60).regex(/^[a-z0-9][a-z0-9-]*$/, 'source must be a lowercase slug').optional(),
+    sourceUrl: webUrl.optional(),
+    // Roughly half of Danish security adverts are written in Danish while the
+    // page is lang="en". Marking it lets a screen reader switch voice (WCAG 3.1.2).
+    lang: z.enum(['en', 'da']).default('en'),
+    featured: z.boolean().default(false),
+  })
+  // A listing that closes before it opens is a data error in the fetcher, not a
+  // listing — fail the build rather than render a negative window.
+  .refine(data => !data.closesAt || data.closesAt.valueOf() >= data.postedAt.valueOf(), {
+    message: 'closesAt must be on or after postedAt',
+    path: ['closesAt'],
+  }),
+});
+
 const incidents = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/incidents' }),
   schema: z.object({
@@ -154,4 +210,4 @@ const incidents = defineCollection({
 
 // Note: there is no `projects` collection — /projects is generated from the
 // GitHub API at build time, so no markdown source exists for it.
-export const collections = { posts, events, communities, members, sponsors, learning, incidents };
+export const collections = { posts, events, communities, members, sponsors, learning, incidents, jobs };

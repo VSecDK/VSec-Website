@@ -57,6 +57,53 @@ const steps = [
       ))}
     </div>
 
+    <!-- Posting a job -->
+    <div id="jobs" class="mt-16 pt-8 border-t border-border scroll-mt-20">
+      <h2 class="font-mono font-bold text-xl text-text-primary mb-2">Posting a job</h2>
+      <p class="font-sans text-sm text-text-secondary leading-relaxed mb-6 max-w-2xl">
+        The job board lists cyber security roles in Denmark. Listings are free — VSec is a
+        non-profit and takes no fee and no cut. Every listing is checked by a human before it
+        goes live, whichever way it arrives.
+      </p>
+
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="card">
+          <p class="font-mono text-sm text-text-primary mb-2">From Discord</p>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            Run <code class="font-mono text-xs text-accent-text">/jobs suggest</code> in the
+            community server with a link to the advert. The bot opens a pull request for review.
+          </p>
+        </div>
+        <div class="card">
+          <p class="font-mono text-sm text-text-primary mb-2">By pull request</p>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            Add a Markdown file to
+            <code class="font-mono text-xs text-accent-text">src/content/jobs/</code>.
+            Copy <code class="font-mono text-xs text-accent-text">TEMPLATE.md.example</code>
+            in that folder — it lists every field.
+          </p>
+        </div>
+        <div class="card">
+          <p class="font-mono text-sm text-text-primary mb-2">From your own tooling</p>
+          <p class="font-sans text-sm text-text-secondary leading-relaxed">
+            Job platforms and ATS integrations can post to the public submission API.
+            See the <code class="font-mono text-xs text-accent-text">vsec-job-fetcher</code>
+            README for the contract.
+          </p>
+        </div>
+      </div>
+
+      <p class="font-mono text-xs text-text-muted mt-5 leading-relaxed">
+        Listings expire automatically — 60 days after posting unless the advert names a
+        closing date. Recruiters are welcome for named roles at a named employer;
+        anonymous "confidential client" adverts are not.
+      </p>
+
+      <div class="flex flex-wrap gap-4 mt-6">
+        <a href="/jobs" class="btn-ghost text-sm">View the job board →</a>
+      </div>
+    </div>
+
     <!-- Valuable Contributors -->
     <div class="mt-16 pt-8 border-t border-border">
       <h2 class="font-mono font-bold text-xl text-text-primary mb-2">Valuable Contributors</h2>
