@@ -31,7 +31,8 @@ src/
 │   ├── communities/   # Partner and related communities
 │   ├── sponsors/      # Sponsors by tier (gold/silver/bronze)
 │   ├── learning/      # Learning resources, CTF platforms, courses
-│   └── incidents/     # Danish cybersecurity incidents
+│   ├── incidents/     # Danish cybersecurity incidents
+│   └── jobs/          # Cyber security job listings (Denmark)
 ├── content.config.ts  # Zod schemas for all collections
 ├── assets/            # Images processed by Astro's image pipeline
 ├── pages/             # Astro page routes
@@ -40,6 +41,8 @@ src/
 ├── lib/               # Utility functions
 └── styles/            # Global CSS and design tokens
 public/                # Static assets (images, favicons)
+workers/
+└── vsec-job-fetcher/  # Cloudflare Worker behind /jobs (self-contained)
 ```
 
 ---
@@ -59,6 +62,11 @@ at build time. Set `GITHUB_TOKEN` in the build environment to avoid the
 unauthenticated 60 requests/hour limit.
 | `learning` | Curated learning resources | category, link, featured |
 | `incidents` | Danish cybersecurity incidents | company, sector, actor, date, type |
+| `jobs` | Security job listings in Denmark | title, company, location, category, level, applyUrl, postedAt |
+
+Job listings expire on their own: `closesAt` if the advert names one, otherwise 60 days
+after `postedAt`. The listing page hides an expired role, and the fetcher Worker opens a
+pull request removing the file 30 days later.
 
 Incident `type` values currently in use: `ransomware`, `ddos`, `dataleak`, `hacking`, `supply-chain`, `ics`, `unknown`.
 
@@ -121,6 +129,29 @@ link: "https://..."
 ---
 ```
 
+### Adding a job listing
+
+Create `src/content/jobs/YYYY-MM-DD-company-role.md` — the date must match `postedAt`.
+`src/content/jobs/TEMPLATE.md.example` has every field with its allowed values:
+
+```markdown
+---
+title: "Senior Application Security Engineer"
+company: "Example A/S"
+description: "One or two sentences shown in the listing."
+location: "Copenhagen"
+category: appsec        # appsec | offensive | defensive | incident-response | cti | grc
+                        # | iam | cloud | ot-ics | architecture | leadership | other
+level: senior           # student | junior | mid | senior | lead | management
+employment: full-time   # full-time | part-time | contract | internship | student-job
+workMode: hybrid        # onsite | hybrid | remote
+applyUrl: "https://example.dk/careers/appsec-engineer"
+postedAt: 2026-09-21
+closesAt: 2026-10-21    # optional
+lang: en                # en | da
+---
+```
+
 ### Adding a member
 
 Create `src/content/members/yourhandle.md`:
@@ -146,6 +177,12 @@ The following Cloudflare Workers run as standalone services and interact with th
 |---|---|---|
 | `vsec-event-fetcher` | Monday 08:00 UTC | Searches for upcoming Danish security events and opens a PR |
 | `vsec-newsletter-generator` | Monday 09:00 UTC | Generates a weekly newsletter post using Cloudflare AI |
+| [`vsec-job-fetcher`](workers/vsec-job-fetcher) | Monday 07:00 UTC | Collects Danish security job adverts and opens a PR; also serves the Discord commands and the public submission API for `/jobs` |
+
+`vsec-job-fetcher` lives in this repository under `workers/` and is self-contained — copy
+the folder to the workers repository if you would rather keep all Workers together. See
+its [README](workers/vsec-job-fetcher/README.md) for setup, the API contract and the
+guardrails. Nothing it does publishes directly: every path ends in a draft pull request.
 
 Each worker requires a GitHub fine-grained PAT with **Contents (R/W)** and **Pull requests (W)** permissions on this repository, stored as a `GITHUB_TOKEN` secret in Cloudflare.
 

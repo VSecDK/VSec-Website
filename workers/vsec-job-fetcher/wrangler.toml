@@ -1,0 +1,46 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "vsec-job-fetcher"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# No public *.workers.dev hostname: the Worker is reached through its route, so
+# the Discord endpoint and the API have one address to allowlist and monitor.
+workers_dev = false
+
+# Weekly collection run. 07:00 UTC on Monday, an hour ahead of the event
+# fetcher, so the two do not contend for the same GitHub rate limit.
+[triggers]
+crons = ["0 7 * * 1"]
+
+[observability]
+enabled = true
+
+# --- Public configuration -----------------------------------------------
+# Secrets are NOT here. Set them with `wrangler secret put <NAME>`:
+#   GITHUB_TOKEN     fine-grained PAT: Contents R/W + Pull requests W
+#   ADMIN_TOKEN      bearer token for /admin/* (omit to disable those routes)
+#   PARTNER_TOKENS   comma-separated tokens for higher submission quota
+[vars]
+GITHUB_REPO = "VSecDK/VSec-Website"
+GITHUB_BASE_BRANCH = "main"
+SITE_ORIGIN = "https://vsec.dk"
+# Browser origins allowed to call the public API. Server-to-server callers are
+# unaffected by this — CORS only constrains browsers.
+ALLOWED_ORIGINS = "https://vsec.dk"
+# Sent in the outgoing User-Agent so a source site can reach a human.
+CONTACT_URL = "https://vsec.dk/security-policy"
+# From the Discord application's General Information page. Public by design —
+# it verifies Discord's signature, it does not authenticate us to Discord.
+DISCORD_PUBLIC_KEY = ""
+# Role id allowed to run /jobs run. Empty means nobody can.
+DISCORD_ADMIN_ROLE_ID = ""
+
+# Create with: wrangler kv namespace create JOBS_KV
+[[kv_namespaces]]
+binding = "JOBS_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Uncomment once DNS is in place, e.g. jobs.vsec.dk:
+# [[routes]]
+# pattern = "jobs.vsec.dk"
+# custom_domain = true
