@@ -1,11 +1,11 @@
 ---
 title: "SektorForum LIVE! 2026"
-description: "Konference om cybersikkerhed indenfor industrielle kontrolsystemer og kritisk infrastruktur generelt."
+description: "Conference on cybersecurity for industrial control systems and critical infrastructure more broadly."
 date: 2026-10-06
 location: "Denmark (venue not announced)"
 type: "conference"
-lang: "da"
+lang: "en"
 link: "https://sektorcert.dk/konference/"
 ---
 
-Konference om cybersikkerhed indenfor industrielle kontrolsystemer og kritisk infrastruktur generelt.
+Conference on cybersecurity for industrial control systems and critical infrastructure more broadly.

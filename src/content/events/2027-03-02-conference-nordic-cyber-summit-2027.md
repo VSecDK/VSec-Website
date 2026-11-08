@@ -1,11 +1,11 @@
 ---
 title: "Nordic Cyber Summit 2027"
-description: "En konference om cybersikkerhed i Norden, hvor eksperter og professionelle mødes for at diskutere nyeste udviklinger og udfordringer."
+description: "A Nordic cybersecurity conference where experts and professionals come together to discuss the latest developments and challenges."
 date: 2027-03-02
 location: "Copenhagen, Denmark"
 type: "conference"
-lang: "da"
+lang: "en"
 link: "https://nordic.cyberseries.io/partners/"
 ---
 
-En konference om cybersikkerhed i Norden, hvor eksperter og professionelle mødes for at diskutere nyeste udviklinger og udfordringer.
+A Nordic cybersecurity conference where experts and professionals come together to discuss the latest developments and challenges.

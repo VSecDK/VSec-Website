@@ -1,11 +1,11 @@
 ---
-title: "Cybersikkerhed for vandselskabers bestyrelse og topledelse"
-description: "Kursus for vandselskabers bestyrelse og topledelse om cybersikkerhed og håndtering af cyberangreb mod kritisk infrastruktur."
+title: "Cybersecurity for Water Utility Boards and Senior Management"
+description: "Course for water utility board members and senior management on cybersecurity and responding to cyberattacks against critical infrastructure."
 date: 2026-11-29
 location: "Copenhagen, Denmark"
 type: "conference"
-lang: "da"
+lang: "en"
 link: "https://www.danva.dk/arrangementer/beredskab/13309-cybersikkerhed-for-vandselskabers-bestyrelse-og-topledelse-nov-2026/"
 ---
 
-Risikoen for cyberangreb er stigende i samfundet, og det er en af de væsentlige risici, som forsyningsselskaberne står overfor som ejere af kritisk infrastruktur.
+The risk of cyberattacks is rising across society, and it is a significant risk facing water utilities as owners of critical infrastructure.
