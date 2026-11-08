@@ -1,10 +1,10 @@
 ---
 title: "Industrial Security Conference Copenhagen"
-description: "Konference om industrial security og cybersikkerhed"
+description: "Conference on industrial security and cybersecurity."
 date: 2026-09-01
 location: "Copenhagen, Denmark"
 type: "conference"
-lang: "da"
+lang: "en"
 link: "https://insightevents.dk/isc-cph/"
 ---
 
