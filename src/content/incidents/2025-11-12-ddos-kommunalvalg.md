@@ -2,7 +2,7 @@
 company: Danish municipalities and public authorities
 sector: Public Sector
 actor: NoName057(16)
-date: 2025-11-11
+date: 2025-11-12
 type: ddos
 ---
 
