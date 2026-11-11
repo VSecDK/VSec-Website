@@ -1,0 +1,277 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import SearchFilter, { type FilterGroup } from '../../components/SearchFilter.astro';
+import {
+  CLOSED_GRACE_DAYS,
+  JOB_CATEGORY_CONFIG,
+  JOB_EMPLOYMENT_CONFIG,
+  JOB_LEVEL_CONFIG,
+  JOB_WORK_MODE_CONFIG,
+  effectiveClosingDate,
+  isoDay,
+} from '../../lib/job-types';
+
+// Frontmatter dates are calendar dates, so zod parses them to midnight UTC.
+// Compare against a UTC "today" — mixing that with a local date flipped events
+// across the upcoming/past boundary depending on when the build ran. The client
+// script below then refines this against the visitor's own local date.
+const todayStr = isoDay(new Date());
+const DAY_MS = 24 * 60 * 60 * 1000;
+const graceStr = isoDay(new Date(Date.now() - CLOSED_GRACE_DAYS * DAY_MS));
+
+const all = await getCollection('jobs');
+
+type Listing = (typeof all)[number] & { closingDay: string };
+
+const withClosing: Listing[] = all.map(job => ({
+  ...job,
+  closingDay: isoDay(effectiveClosingDate(job.data.postedAt, job.data.closesAt)),
+}));
+
+const open = withClosing
+  .filter(job => job.closingDay >= todayStr)
+  .sort((a, b) =>
+    Number(b.data.featured) - Number(a.data.featured) ||
+    b.data.postedAt.valueOf() - a.data.postedAt.valueOf());
+
+// Keep a short tail of recently closed roles: they tell a visitor the board is
+// alive and show which companies hire, without being applyable any more.
+const recentlyClosed = withClosing
+  .filter(job => job.closingDay < todayStr && job.closingDay >= graceStr)
+  .sort((a, b) => b.closingDay.localeCompare(a.closingDay));
+
+const companies = new Set(open.map(job => job.data.company.toLowerCase())).size;
+
+// Only offer chips for values that actually occur, so the filter row stays
+// short and never leads to a guaranteed-empty result.
+function groupFrom<T extends string>(
+  id: string,
+  label: string,
+  config: Record<T, { label: string }>,
+  values: T[],
+): FilterGroup | null {
+  const present = (Object.keys(config) as T[]).filter(key => values.includes(key));
+  if (present.length < 2) return null;
+  return { id, label, options: present.map(value => ({ value, label: config[value].label })) };
+}
+
+const filters = [
+  groupFrom('category', 'Field', JOB_CATEGORY_CONFIG, open.map(job => job.data.category)),
+  groupFrom('level', 'Level', JOB_LEVEL_CONFIG, open.map(job => job.data.level)),
+  groupFrom('mode', 'Work', JOB_WORK_MODE_CONFIG, open.map(job => job.data.workMode)),
+].filter((group): group is FilterGroup => group !== null);
+
+const dateFormat: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+
+function searchText(job: Listing): string {
+  return [
+    job.data.title,
+    job.data.company,
+    job.data.description,
+    job.data.location,
+    JOB_CATEGORY_CONFIG[job.data.category].label,
+    JOB_LEVEL_CONFIG[job.data.level].label,
+    JOB_WORK_MODE_CONFIG[job.data.workMode].label,
+    JOB_EMPLOYMENT_CONFIG[job.data.employment].label,
+  ].join(' ').toLowerCase();
+}
+
+function searchTags(job: Listing): string {
+  return [job.data.category, job.data.level, job.data.workMode, job.data.employment].join(',');
+}
+---
+
+<Layout
+  title="Jobs"
+  description="Cyber security jobs in Denmark — curated by the VSec community."
+>
+  <div class="max-w-6xl mx-auto px-6 py-16">
+
+    <div class="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-8 mb-12">
+      <div>
+        <p class="section-label">// Careers</p>
+        <h1 class="font-mono font-bold text-2xl sm:text-3xl md:text-4xl text-text-primary mb-2">Jobs</h1>
+        <p class="font-sans text-text-secondary max-w-lg leading-relaxed">
+          Cyber security roles in Denmark. Curated by the community, checked by a human
+          before it lands here — no recruiter spam, no reposts of the same advert.
+        </p>
+      </div>
+      <div class="flex gap-6 flex-shrink-0 sm:text-right">
+        <div>
+          <p id="open-count" class="font-mono font-bold text-3xl text-accent">{open.length}</p>
+          <p class="font-mono text-xs text-text-muted">open</p>
+        </div>
+        <div>
+          <p class="font-mono font-bold text-3xl text-text-secondary">{companies}</p>
+          <p class="font-mono text-xs text-text-muted">{companies === 1 ? 'company' : 'companies'}</p>
+        </div>
+      </div>
+    </div>
+
+    {open.length > 0 && (
+      <SearchFilter listId="jobs-list" placeholder="Search role, company, city…" filters={filters} />
+    )}
+
+    {all.length === 0 ? (
+      <div class="p-8 rounded-lg border border-dashed border-border text-center">
+        <p class="font-mono text-sm text-text-muted mb-2">No open listings right now.</p>
+        <p class="font-sans text-sm text-text-secondary mb-5 max-w-md mx-auto">
+          Hiring for a security role in Denmark, or spotted one worth sharing?
+          Listings are free and come in by pull request or through the community Discord.
+        </p>
+        <a href="/contribute#jobs" class="btn-ghost text-sm">How to post a job →</a>
+      </div>
+    ) : (
+      <div id="jobs-list" class="space-y-16">
+
+        {open.length > 0 && (
+          <section data-search-section id="open-jobs">
+            <div class="flex flex-col gap-3">
+              {open.map(job => (
+                <a
+                  href={`/jobs/${job.id}`}
+                  class="card group flex flex-col md:flex-row md:items-center gap-4 md:gap-6"
+                  data-closes={job.closingDay}
+                  data-search-text={searchText(job)}
+                  data-search-tags={searchTags(job)}
+                >
+                  <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                      <span class:list={['tag text-[10px] py-0', JOB_CATEGORY_CONFIG[job.data.category].style]}>
+                        {JOB_CATEGORY_CONFIG[job.data.category].label}
+                      </span>
+                      <span class="font-mono text-[10px] text-text-muted tracking-wider uppercase">
+                        {JOB_LEVEL_CONFIG[job.data.level].label}
+                      </span>
+                      {job.data.featured && (
+                        <span class="font-mono text-[10px] text-accent-text tracking-wider uppercase">★ Featured</span>
+                      )}
+                    </div>
+
+                    <h2
+                      class="font-mono font-semibold text-text-primary group-hover:text-accent transition-colors duration-200"
+                      lang={job.data.lang}
+                    >{job.data.title}</h2>
+
+                    <p class="font-mono text-sm text-text-secondary mt-0.5">{job.data.company}</p>
+                    <p class="font-sans text-sm text-text-secondary mt-2" lang={job.data.lang}>{job.data.description}</p>
+
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 font-mono text-xs text-text-muted">
+                      <span class="flex items-center gap-1">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        {job.data.location}
+                      </span>
+                      <span>{JOB_WORK_MODE_CONFIG[job.data.workMode].label}</span>
+                      <span>{JOB_EMPLOYMENT_CONFIG[job.data.employment].label}</span>
+                      {job.data.salary && <span>{job.data.salary}</span>}
+                    </div>
+                  </div>
+
+                  <div class="flex-shrink-0 md:text-right">
+                    <p class="font-mono text-xs text-text-muted">
+                      Posted {job.data.postedAt.toLocaleDateString('en-GB', dateFormat)}
+                    </p>
+                    <p class="font-mono text-xs text-text-muted mt-1">
+                      Closes {new Date(`${job.closingDay}T00:00:00Z`).toLocaleDateString('en-GB', dateFormat)}
+                      {!job.data.closesAt && <span class="text-text-muted/70"> (est.)</span>}
+                    </p>
+                    <span class="btn-ghost text-xs mt-3 pointer-events-none">View role →</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {recentlyClosed.length > 0 && (
+          <section data-search-section>
+            <h2 class="font-mono text-xs text-text-muted tracking-widest uppercase mb-6 flex items-center gap-3">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-text-muted"></span>
+              Recently closed
+            </h2>
+            <div class="flex flex-col gap-2 opacity-60">
+              {recentlyClosed.map(job => (
+                <div
+                  class="card flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-4"
+                  data-search-text={searchText(job)}
+                  data-search-tags={searchTags(job)}
+                >
+                  <span class="font-mono text-xs text-text-muted flex-shrink-0">
+                    {new Date(`${job.closingDay}T00:00:00Z`).toLocaleDateString('en-GB', dateFormat)}
+                  </span>
+                  <p class="font-mono text-sm text-text-secondary" lang={job.data.lang}>{job.data.title}</p>
+                  <span class="font-mono text-xs text-text-muted sm:ml-auto">{job.data.company} · {job.data.location}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    )}
+
+    <div class="mt-16 p-6 rounded-lg border border-dashed border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <p class="font-mono text-sm text-text-primary mb-1">Hiring, or spotted a role?</p>
+        <p class="font-sans text-sm text-text-secondary">
+          Listings are free. Open a pull request, or let the community Discord bot do it for you.
+        </p>
+      </div>
+      <a href="/contribute#jobs" class="btn-ghost text-sm flex-shrink-0">Post a job →</a>
+    </div>
+
+  </div>
+</Layout>
+
+<script>
+  // A listing can expire between two deploys — the site is static and may sit
+  // unbuilt for weeks. Re-check each card against the visitor's local date and
+  // retire the ones that have closed, then let the filter recount.
+  const openSection = document.getElementById('open-jobs');
+  const counter = document.getElementById('open-count');
+  const filter = document.getElementById('sf-jobs-list');
+
+  if (openSection) {
+    // Counts only the open section: the "recently closed" cards below it are
+    // searchable but are not open roles.
+    const countVisible = () => {
+      const cards = openSection.querySelectorAll<HTMLElement>('[data-closes]');
+      return Array.from(cards).filter(
+        card => !card.hasAttribute('data-unavailable') && card.style.display !== 'none',
+      ).length;
+    };
+
+    const retireClosed = () => {
+      const now = new Date();
+      const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+        .map(value => String(value).padStart(2, '0'))
+        .join('-');
+
+      openSection.querySelectorAll<HTMLElement>('[data-closes]').forEach(card => {
+        card.toggleAttribute('data-unavailable', (card.dataset.closes || '') < today);
+      });
+
+      filter?.dispatchEvent(new CustomEvent('searchfilter:refresh'));
+      if (counter) counter.textContent = String(countVisible());
+    };
+
+    retireClosed();
+
+    // Keep the count honest for a tab left open across midnight.
+    const scheduleNextUpdate = () => {
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 0, 0);
+      window.setTimeout(() => {
+        retireClosed();
+        scheduleNextUpdate();
+      }, nextMidnight.getTime() - Date.now());
+    };
+    scheduleNextUpdate();
+
+    filter?.addEventListener('searchfilter:change', () => {
+      if (counter) counter.textContent = String(countVisible());
+    });
+  }
+</script>

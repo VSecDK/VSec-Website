@@ -1,0 +1,20 @@
+{
+  "name": "vsec-job-fetcher",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker that proposes Danish cyber security job listings to the VSec website by pull request",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260921.1",
+    "@types/node": "26.6.2",
+    "typescript": "7.0.2",
+    "wrangler": "4.136.0"
+  }
+}

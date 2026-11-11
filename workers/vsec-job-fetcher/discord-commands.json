@@ -1,0 +1,106 @@
+[
+  {
+    "name": "jobs",
+    "description": "Danish cyber security jobs from vsec.dk",
+    "options": [
+      {
+        "type": 1,
+        "name": "latest",
+        "description": "Show the most recently posted open roles",
+        "options": [
+          {
+            "type": 3,
+            "name": "field",
+            "description": "Limit to one field",
+            "required": false,
+            "choices": [
+              { "name": "AppSec", "value": "appsec" },
+              { "name": "Offensive", "value": "offensive" },
+              { "name": "SOC / Blue Team", "value": "defensive" },
+              { "name": "Incident Response", "value": "incident-response" },
+              { "name": "Threat Intel", "value": "cti" },
+              { "name": "GRC & Compliance", "value": "grc" },
+              { "name": "Identity & Access", "value": "iam" },
+              { "name": "Cloud Security", "value": "cloud" },
+              { "name": "OT / ICS", "value": "ot-ics" },
+              { "name": "Architecture", "value": "architecture" },
+              { "name": "Leadership", "value": "leadership" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "search",
+        "description": "Search open roles by title, company or city",
+        "options": [
+          { "type": 3, "name": "query", "description": "What to search for", "required": true }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "suggest",
+        "description": "Suggest a role for the board (opens a pull request for review)",
+        "options": [
+          { "type": 3, "name": "url", "description": "Link to the advert (https)", "required": true },
+          { "type": 3, "name": "title", "description": "Role title", "required": true },
+          { "type": 3, "name": "company", "description": "Hiring company", "required": true },
+          { "type": 3, "name": "location", "description": "City, e.g. Copenhagen", "required": true },
+          { "type": 3, "name": "description", "description": "One line about the role", "required": false },
+          {
+            "type": 3, "name": "field", "description": "Field", "required": false,
+            "choices": [
+              { "name": "AppSec", "value": "appsec" },
+              { "name": "Offensive", "value": "offensive" },
+              { "name": "SOC / Blue Team", "value": "defensive" },
+              { "name": "Incident Response", "value": "incident-response" },
+              { "name": "Threat Intel", "value": "cti" },
+              { "name": "GRC & Compliance", "value": "grc" },
+              { "name": "Identity & Access", "value": "iam" },
+              { "name": "Cloud Security", "value": "cloud" },
+              { "name": "OT / ICS", "value": "ot-ics" },
+              { "name": "Architecture", "value": "architecture" },
+              { "name": "Leadership", "value": "leadership" },
+              { "name": "Other", "value": "other" }
+            ]
+          },
+          {
+            "type": 3, "name": "level", "description": "Seniority", "required": false,
+            "choices": [
+              { "name": "Student", "value": "student" },
+              { "name": "Junior", "value": "junior" },
+              { "name": "Mid-level", "value": "mid" },
+              { "name": "Senior", "value": "senior" },
+              { "name": "Lead", "value": "lead" },
+              { "name": "Management", "value": "management" }
+            ]
+          },
+          {
+            "type": 3, "name": "work", "description": "Work mode", "required": false,
+            "choices": [
+              { "name": "On-site", "value": "onsite" },
+              { "name": "Hybrid", "value": "hybrid" },
+              { "name": "Remote", "value": "remote" }
+            ]
+          },
+          {
+            "type": 3, "name": "type", "description": "Employment type", "required": false,
+            "choices": [
+              { "name": "Full-time", "value": "full-time" },
+              { "name": "Part-time", "value": "part-time" },
+              { "name": "Contract", "value": "contract" },
+              { "name": "Internship", "value": "internship" },
+              { "name": "Student job", "value": "student-job" }
+            ]
+          },
+          { "type": 3, "name": "closes", "description": "Closing date, YYYY-MM-DD", "required": false }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "run",
+        "description": "Run a collection cycle now (restricted)"
+      }
+    ]
+  }
+]

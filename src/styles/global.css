@@ -230,6 +230,22 @@
     @apply outline outline-2 outline-offset-2 outline-accent;
   }
 
+  /* ─── Filter chips (SearchFilter) ─────────────────────────────────────── */
+  /* Selected state rides on data-active rather than a class so the button's
+     aria-pressed and its styling can never disagree. */
+  .filter-chip {
+    @apply inline-flex items-center px-2.5 py-1 font-mono text-[11px] rounded
+           border border-border text-text-secondary bg-bg-surface cursor-pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .filter-chip:hover { @apply border-accent/30 text-text-primary; }
+  .filter-chip:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-accent;
+  }
+  .filter-chip[data-active='true'] {
+    @apply border-accent/40 bg-accent/10 text-accent-text;
+  }
+
   /* ─── Members carousel pager ─────────────────────────────────────────── */
   .mc-dot {
     @apply w-1.5 h-1.5 rounded-full border-0 cursor-pointer bg-text-muted/40;
